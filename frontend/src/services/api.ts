@@ -36,7 +36,7 @@ async function request<T>(
     }
 
     return { data };
-  } catch (err) {
+  } catch {
     return { error: 'Network error' };
   }
 }

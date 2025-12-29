@@ -18,16 +18,26 @@ export default [
         sourceType: 'module'
       },
       globals: {
+        // Browser globals
         document: 'readonly',
         window: 'readonly',
         console: 'readonly',
         fetch: 'readonly',
+        localStorage: 'readonly',
+        navigator: 'readonly',
+        setTimeout: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        RequestInit: 'readonly',
+        React: 'readonly',
+        // Test globals
         test: 'readonly',
         expect: 'readonly',
         beforeEach: 'readonly',
         jest: 'readonly',
         global: 'readonly',
-        HTMLElement: 'readonly'
+        describe: 'readonly',
+        it: 'readonly'
       }
     },
     plugins: {
