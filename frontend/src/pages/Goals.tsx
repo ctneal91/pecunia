@@ -26,11 +26,14 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-function GoalCard({ goal, onEdit, onDelete }: { goal: Goal; onEdit: () => void; onDelete: () => void }) {
+function GoalCard({ goal, onClick, onEdit, onDelete }: { goal: Goal; onClick: () => void; onEdit: () => void; onDelete: () => void }) {
   const progressColor = goal.completed ? 'success' : 'primary';
 
   return (
-    <Paper sx={{ p: 3, mb: 2 }}>
+    <Paper
+      sx={{ p: 3, mb: 2, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+      onClick={onClick}
+    >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h5" component="span">
@@ -45,7 +48,7 @@ function GoalCard({ goal, onEdit, onDelete }: { goal: Goal; onEdit: () => void; 
             </Typography>
           </Box>
         </Box>
-        <Box>
+        <Box onClick={(e) => e.stopPropagation()}>
           <IconButton size="small" onClick={onEdit} aria-label="edit">
             <EditIcon />
           </IconButton>
@@ -168,6 +171,7 @@ export default function Goals() {
             <GoalCard
               key={goal.id}
               goal={goal}
+              onClick={() => navigate(`/goals/${goal.id}`)}
               onEdit={() => handleEditClick(goal)}
               onDelete={() => handleDeleteClick(goal)}
             />

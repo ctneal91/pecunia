@@ -64,3 +64,19 @@ export const GOAL_TYPE_COLORS: Record<GoalType, string> = {
   home: '#795548',
   other: '#607D8B',
 };
+
+export interface Contribution {
+  id: number | string;
+  goal_id: number | string;
+  user_id: number | null;
+  amount: number;
+  note: string | null;
+  contributed_at: string;
+  created_at: string;
+}
+
+export interface ContributionInput {
+  amount: number;
+  note?: string;
+  contributed_at: string;
+}
