@@ -72,6 +72,33 @@ interface ContributionResponse {
   goal: Goal;
 }
 
+export interface DashboardStats {
+  total_saved: number;
+  total_target: number;
+  overall_progress: number;
+  goal_count: number;
+  completed_count: number;
+  active_count: number;
+}
+
+export interface RecentContribution {
+  id: number;
+  amount: number;
+  note: string | null;
+  contributed_at: string;
+  goal: {
+    id: number;
+    title: string;
+    goal_type: string;
+  };
+}
+
+interface DashboardResponse {
+  stats: DashboardStats;
+  recent_contributions: RecentContribution[];
+  goals_summary: Goal[];
+}
+
 export const api = {
   signup: (email: string, password: string, passwordConfirmation: string, name?: string) =>
     request<AuthResponse>('/signup', {
@@ -149,4 +176,6 @@ export const api = {
     request<{ goal: Goal }>(`/goals/${goalId}/contributions/${contributionId}`, {
       method: 'DELETE',
     }),
+
+  getDashboard: () => request<DashboardResponse>('/dashboard'),
 };

@@ -17,6 +17,9 @@ Rails.application.routes.draw do
       get "me", to: "users#me"
       patch "me", to: "users#update"
 
+      # Dashboard
+      get "dashboard", to: "dashboard#index"
+
       # Goals
       resources :goals, only: [ :index, :show, :create, :update, :destroy ] do
         collection do
