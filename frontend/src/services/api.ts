@@ -1,4 +1,5 @@
 import { Goal, GoalInput, Contribution, ContributionInput } from '../types/goal';
+import { Group, GroupWithMembers, GroupInput, Membership } from '../types/group';
 
 const API_BASE = '/api/v1';
 
@@ -178,4 +179,53 @@ export const api = {
     }),
 
   getDashboard: () => request<DashboardResponse>('/dashboard'),
+
+  // Groups
+  getGroups: () => request<{ groups: Group[] }>('/groups'),
+
+  getGroup: (id: number) => request<{ group: GroupWithMembers }>(`/groups/${id}`),
+
+  createGroup: (data: GroupInput) =>
+    request<{ group: Group }>('/groups', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateGroup: (id: number, data: GroupInput) =>
+    request<{ group: Group }>(`/groups/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  deleteGroup: (id: number) =>
+    request<void>(`/groups/${id}`, {
+      method: 'DELETE',
+    }),
+
+  joinGroup: (inviteCode: string) =>
+    request<{ group: Group }>('/groups/join', {
+      method: 'POST',
+      body: JSON.stringify({ invite_code: inviteCode }),
+    }),
+
+  regenerateInviteCode: (groupId: number) =>
+    request<{ group: Group }>(`/groups/${groupId}/regenerate_invite`, {
+      method: 'POST',
+    }),
+
+  leaveGroup: (groupId: number) =>
+    request<void>(`/groups/${groupId}/memberships/leave`, {
+      method: 'DELETE',
+    }),
+
+  updateMembership: (groupId: number, membershipId: number, role: 'admin' | 'member') =>
+    request<{ membership: Membership }>(`/groups/${groupId}/memberships/${membershipId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    }),
+
+  removeMember: (groupId: number, membershipId: number) =>
+    request<void>(`/groups/${groupId}/memberships/${membershipId}`, {
+      method: 'DELETE',
+    }),
 };

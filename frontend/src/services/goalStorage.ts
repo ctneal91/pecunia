@@ -53,6 +53,8 @@ export const goalStorage = {
       progress_percentage: calculatedFields.progress_percentage!,
       remaining_amount: calculatedFields.remaining_amount!,
       completed: calculatedFields.completed!,
+      group_id: null,
+      group_name: null,
       created_at: now,
       updated_at: now,
     };

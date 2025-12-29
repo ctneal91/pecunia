@@ -20,6 +20,8 @@ export interface Goal {
   progress_percentage: number;
   remaining_amount: number;
   completed: boolean;
+  group_id: number | null;
+  group_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +35,7 @@ export interface GoalInput {
   target_date?: string;
   icon?: string;
   color?: string;
+  group_id?: number;
 }
 
 export const GOAL_TYPE_LABELS: Record<GoalType, string> = {

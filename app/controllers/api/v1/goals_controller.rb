@@ -5,7 +5,7 @@ module Api
       before_action :set_goal, only: [ :show, :update, :destroy ]
 
       def index
-        goals = current_user.goals.order(created_at: :desc)
+        goals = accessible_goals.includes(:group).order(created_at: :desc)
         render json: { goals: goals.map { |g| GoalSerializer.new(g).as_json } }
       end
 
@@ -14,7 +14,15 @@ module Api
       end
 
       def create
-        goal = current_user.goals.build(goal_params)
+        goal = Goal.new(goal_params)
+        goal.user = current_user
+
+        if goal.group_id.present?
+          unless current_user.groups.exists?(goal.group_id)
+            render json: { error: "You are not a member of this group" }, status: :forbidden
+            return
+          end
+        end
 
         if goal.save
           render json: { goal: GoalSerializer.new(goal).as_json }, status: :created
@@ -65,13 +73,21 @@ module Api
       private
 
       def set_goal
-        @goal = current_user.goals.find(params[:id])
+        @goal = accessible_goals.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render json: { error: "Goal not found" }, status: :not_found
       end
 
+      def accessible_goals
+        personal_goals = current_user.goals.where(group_id: nil)
+        group_goal_ids = Goal.joins(group: :memberships)
+                             .where(memberships: { user_id: current_user.id })
+                             .pluck(:id)
+        Goal.where(id: personal_goals.pluck(:id) + group_goal_ids)
+      end
+
       def goal_params
-        params.permit(:title, :description, :target_amount, :current_amount, :goal_type, :target_date, :icon, :color)
+        params.permit(:title, :description, :target_amount, :current_amount, :goal_type, :target_date, :icon, :color, :group_id)
       end
     end
   end

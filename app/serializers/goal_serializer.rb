@@ -19,6 +19,8 @@ class GoalSerializer
       progress_percentage: goal.progress_percentage,
       remaining_amount: goal.remaining_amount.to_f,
       completed: goal.completed?,
+      group_id: goal.group_id,
+      group_name: goal.group&.name,
       created_at: goal.created_at,
       updated_at: goal.updated_at
     }

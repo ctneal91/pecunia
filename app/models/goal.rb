@@ -2,11 +2,12 @@ class Goal < ApplicationRecord
   GOAL_TYPES = %w[emergency_fund savings debt_payoff retirement vacation home other].freeze
 
   belongs_to :user, optional: true
+  belongs_to :group, optional: true
   has_many :contributions, dependent: :destroy
 
   validates :title, presence: true
   validates :target_amount, presence: true, numericality: { greater_than: 0 }
-  validates :current_amount, numericality: true
+  validates :current_amount, numericality: { greater_than_or_equal_to: 0 }
   validates :goal_type, presence: true, inclusion: { in: GOAL_TYPES }
 
   def progress_percentage

@@ -12,7 +12,10 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { useGoals } from '../contexts/GoalsContext';
+import { useAuth } from '../contexts/AuthContext';
+import { api } from '../services/api';
 import { GoalType, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS, GoalInput } from '../types/goal';
+import { Group } from '../types/group';
 
 const GOAL_TYPES: GoalType[] = [
   'emergency_fund',
@@ -27,6 +30,7 @@ const GOAL_TYPES: GoalType[] = [
 export default function GoalForm() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const { goals, createGoal, updateGoal } = useGoals();
   const isEditing = Boolean(id);
 
@@ -36,8 +40,20 @@ export default function GoalForm() {
   const [currentAmount, setCurrentAmount] = useState('');
   const [goalType, setGoalType] = useState<GoalType>('savings');
   const [targetDate, setTargetDate] = useState('');
+  const [groupId, setGroupId] = useState<number | ''>('');
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      api.getGroups().then((response) => {
+        if (response.data) {
+          setGroups(response.data.groups);
+        }
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -49,6 +65,7 @@ export default function GoalForm() {
         setCurrentAmount(String(goal.current_amount));
         setGoalType(goal.goal_type);
         setTargetDate(goal.target_date || '');
+        setGroupId(goal.group_id || '');
       }
     }
   }, [isEditing, id, goals]);
@@ -83,6 +100,7 @@ export default function GoalForm() {
       current_amount: current,
       goal_type: goalType,
       target_date: targetDate || undefined,
+      group_id: groupId || undefined,
     };
 
     let result;
@@ -191,6 +209,25 @@ export default function GoalForm() {
               margin="normal"
               placeholder="Optional: Add notes about this goal"
             />
+
+            {user && groups.length > 0 && (
+              <TextField
+                select
+                label="Share with Group"
+                fullWidth
+                value={groupId}
+                onChange={(e) => setGroupId(e.target.value === '' ? '' : Number(e.target.value))}
+                margin="normal"
+                helperText="Optional: Assign this goal to a group so all members can see it"
+              >
+                <MenuItem value="">Personal (not shared)</MenuItem>
+                {groups.map((group) => (
+                  <MenuItem key={group.id} value={group.id}>
+                    {group.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
 
             <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
               <Button

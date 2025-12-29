@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_185940) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_200757) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -33,13 +33,36 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_185940) do
     t.decimal "current_amount", precision: 15, scale: 2, default: "0.0", null: false
     t.text "description"
     t.string "goal_type", null: false
+    t.bigint "group_id"
     t.string "icon"
     t.decimal "target_amount", precision: 15, scale: 2, null: false
     t.date "target_date"
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.index ["group_id"], name: "index_goals_on_group_id"
     t.index ["user_id"], name: "index_goals_on_user_id"
+  end
+
+  create_table "groups", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "invite_code", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_groups_on_created_by_id"
+    t.index ["invite_code"], name: "index_groups_on_invite_code", unique: true
+  end
+
+  create_table "memberships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "group_id", null: false
+    t.string "role", default: "member", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["group_id"], name: "index_memberships_on_group_id"
+    t.index ["user_id", "group_id"], name: "index_memberships_on_user_id_and_group_id", unique: true
+    t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -54,5 +77,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_185940) do
 
   add_foreign_key "contributions", "goals"
   add_foreign_key "contributions", "users"
+  add_foreign_key "goals", "groups"
   add_foreign_key "goals", "users"
+  add_foreign_key "groups", "users", column: "created_by_id"
+  add_foreign_key "memberships", "groups"
+  add_foreign_key "memberships", "users"
 end

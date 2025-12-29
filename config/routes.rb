@@ -27,6 +27,19 @@ Rails.application.routes.draw do
         end
         resources :contributions, only: [ :index, :create, :update, :destroy ]
       end
+
+      # Groups
+      resources :groups, only: [ :index, :show, :create, :update, :destroy ] do
+        member do
+          post :regenerate_invite
+        end
+        resources :memberships, only: [ :update, :destroy ] do
+          collection do
+            delete :leave
+          end
+        end
+      end
+      post "groups/join", to: "groups#join"
     end
   end
 

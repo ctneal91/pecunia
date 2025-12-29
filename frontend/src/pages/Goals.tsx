@@ -9,6 +9,7 @@ import {
   IconButton,
   Alert,
   Skeleton,
+  Chip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,9 +41,14 @@ function GoalCard({ goal, onClick, onEdit, onDelete }: { goal: Goal; onClick: ()
             {GOAL_TYPE_ICONS[goal.goal_type]}
           </Typography>
           <Box>
-            <Typography variant="h6" component="h2">
-              {goal.title}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="h6" component="h2">
+                {goal.title}
+              </Typography>
+              {goal.group_name && (
+                <Chip label={goal.group_name} size="small" variant="outlined" />
+              )}
+            </Box>
             <Typography variant="body2" color="text.secondary">
               {GOAL_TYPE_LABELS[goal.goal_type]}
             </Typography>

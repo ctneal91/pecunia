@@ -42,9 +42,16 @@ export default function Navbar() {
           Pecunia
         </Typography>
 
-        <Button color="inherit" component={RouterLink} to="/goals" sx={{ flexGrow: 1 }}>
-          Goals
-        </Button>
+        <Box sx={{ flexGrow: 1, display: 'flex', gap: 1 }}>
+          <Button color="inherit" component={RouterLink} to="/goals">
+            Goals
+          </Button>
+          {user && (
+            <Button color="inherit" component={RouterLink} to="/groups">
+              Groups
+            </Button>
+          )}
+        </Box>
 
         {user ? (
           <Box>

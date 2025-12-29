@@ -11,6 +11,8 @@ import Profile from './pages/Profile';
 import Goals from './pages/Goals';
 import GoalForm from './pages/GoalForm';
 import GoalDetail from './pages/GoalDetail';
+import Groups from './pages/Groups';
+import GroupDetail from './pages/GroupDetail';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
                 <Route path="goals/new" element={<GoalForm />} />
                 <Route path="goals/:id" element={<GoalDetail />} />
                 <Route path="goals/:id/edit" element={<GoalForm />} />
+                <Route path="groups" element={<Groups />} />
+                <Route path="groups/:id" element={<GroupDetail />} />
               </Route>
             </Routes>
           </BrowserRouter>
