@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_200757) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_202449) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,21 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_200757) do
     t.bigint "user_id"
     t.index ["group_id"], name: "index_goals_on_group_id"
     t.index ["user_id"], name: "index_goals_on_user_id"
+  end
+
+  create_table "group_invites", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.bigint "group_id", null: false
+    t.bigint "invited_by_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_id", "email"], name: "index_group_invites_on_group_id_and_email", unique: true
+    t.index ["group_id"], name: "index_group_invites_on_group_id"
+    t.index ["invited_by_id"], name: "index_group_invites_on_invited_by_id"
+    t.index ["token"], name: "index_group_invites_on_token", unique: true
   end
 
   create_table "groups", force: :cascade do |t|
@@ -79,6 +94,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_200757) do
   add_foreign_key "contributions", "users"
   add_foreign_key "goals", "groups"
   add_foreign_key "goals", "users"
+  add_foreign_key "group_invites", "groups"
+  add_foreign_key "group_invites", "users", column: "invited_by_id"
   add_foreign_key "groups", "users", column: "created_by_id"
   add_foreign_key "memberships", "groups"
   add_foreign_key "memberships", "users"

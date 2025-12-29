@@ -38,8 +38,19 @@ Rails.application.routes.draw do
             delete :leave
           end
         end
+        resources :invites, controller: "group_invites", only: [ :index, :create ] do
+          member do
+            post :resend
+          end
+        end
       end
       post "groups/join", to: "groups#join"
+
+      # Invites (public endpoints)
+      get "invites/pending", to: "group_invites#pending"
+      get "invites/:token", to: "group_invites#show"
+      post "invites/:token/accept", to: "group_invites#accept"
+      post "invites/:token/decline", to: "group_invites#decline"
     end
   end
 

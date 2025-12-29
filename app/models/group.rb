@@ -5,6 +5,7 @@ class Group < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :members, through: :memberships, source: :user
   has_many :goals, dependent: :nullify
+  has_many :group_invites, dependent: :destroy
 
   validates :name, presence: true
   validates :invite_code, presence: true, uniqueness: true

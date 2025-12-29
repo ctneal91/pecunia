@@ -34,7 +34,9 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
-import { GroupWithMembers, Membership } from '../types/group';
+import { GroupWithMembers, Membership, GroupInvite } from '../types/group';
+import SendIcon from '@mui/icons-material/Send';
+import EmailIcon from '@mui/icons-material/Email';
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
@@ -55,10 +57,23 @@ export default function GroupDetail() {
   const [memberMenuAnchor, setMemberMenuAnchor] = useState<null | HTMLElement>(null);
   const [selectedMember, setSelectedMember] = useState<Membership | null>(null);
 
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [invites, setInvites] = useState<GroupInvite[]>([]);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     loadGroup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    if (group?.is_admin && id) {
+      loadInvites();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group?.is_admin, id]);
 
   async function loadGroup() {
     if (!id) return;
@@ -71,6 +86,46 @@ export default function GroupDetail() {
       setEditName(response.data.group.name);
     }
     setLoading(false);
+  }
+
+  async function loadInvites() {
+    if (!id) return;
+
+    const response = await api.getGroupInvites(parseInt(id));
+    if (response.data) {
+      setInvites(response.data.invites);
+    }
+  }
+
+  async function handleSendInvite() {
+    if (!group || !inviteEmail.trim()) return;
+
+    setSendingInvite(true);
+    setError(null);
+    setInviteSuccess(null);
+
+    const response = await api.sendInvite(group.id, inviteEmail.trim());
+    if (response.error) {
+      setError(response.error);
+    } else if (response.data) {
+      setInviteSuccess(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail('');
+      setInviteDialogOpen(false);
+      loadInvites();
+    }
+    setSendingInvite(false);
+  }
+
+  async function handleResendInvite(invite: GroupInvite) {
+    if (!group) return;
+
+    const response = await api.resendInvite(group.id, invite.id);
+    if (response.error) {
+      setError(response.error);
+    } else {
+      setInviteSuccess(`Invitation resent to ${invite.email}`);
+      loadInvites();
+    }
   }
 
   async function handleUpdateGroup() {
@@ -206,6 +261,12 @@ export default function GroupDetail() {
           </Alert>
         )}
 
+        {inviteSuccess && (
+          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setInviteSuccess(null)}>
+            {inviteSuccess}
+          </Alert>
+        )}
+
         <Paper sx={{ p: 3, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box>
@@ -238,32 +299,74 @@ export default function GroupDetail() {
             </Box>
           </Box>
 
-          {group.is_admin && group.invite_code && (
+          {group.is_admin && (
             <Box sx={{ bgcolor: 'grey.100', p: 2, borderRadius: 1 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Invite Code
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="h6" sx={{ fontFamily: 'monospace', flexGrow: 1 }}>
-                  {group.invite_code}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Invite Members
                 </Typography>
-                <Tooltip title={copied ? 'Copied!' : 'Copy'}>
-                  <IconButton onClick={handleCopyInviteCode} size="small">
-                    <ContentCopyIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Generate new code">
-                  <IconButton onClick={handleRegenerateInvite} size="small">
-                    <RefreshIcon />
-                  </IconButton>
-                </Tooltip>
+                <Button
+                  size="small"
+                  startIcon={<EmailIcon />}
+                  onClick={() => setInviteDialogOpen(true)}
+                >
+                  Send Email Invite
+                </Button>
               </Box>
-              <Typography variant="caption" color="text.secondary">
-                Share this code with people you want to invite to the group.
-              </Typography>
+
+              {group.invite_code && (
+                <>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Invite code:
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+                      {group.invite_code}
+                    </Typography>
+                    <Tooltip title={copied ? 'Copied!' : 'Copy'}>
+                      <IconButton onClick={handleCopyInviteCode} size="small">
+                        <ContentCopyIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Generate new code">
+                      <IconButton onClick={handleRegenerateInvite} size="small">
+                        <RefreshIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Share this code or send an email invite to add people to your group.
+                  </Typography>
+                </>
+              )}
             </Box>
           )}
         </Paper>
+
+        {/* Pending Invites */}
+        {group.is_admin && invites.filter(i => i.status === 'pending').length > 0 && (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Pending Invites
+            </Typography>
+            <List dense>
+              {invites.filter(i => i.status === 'pending').map((invite) => (
+                <ListItem key={invite.id}>
+                  <ListItemText
+                    primary={invite.email}
+                    secondary={invite.expired ? 'Expired' : `Sent ${new Date(invite.invited_at).toLocaleDateString()}`}
+                  />
+                  <Button
+                    size="small"
+                    onClick={() => handleResendInvite(invite)}
+                  >
+                    Resend
+                  </Button>
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        )}
 
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
@@ -369,6 +472,37 @@ export default function GroupDetail() {
             <Button onClick={() => setLeaveDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleLeaveGroup} color="error" variant="contained" disabled={submitting}>
               Leave
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Email Invite Dialog */}
+        <Dialog open={inviteDialogOpen} onClose={() => setInviteDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Invite by Email</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Send an email invitation to join {group.name}. They'll receive a link to accept the invitation.
+            </Typography>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Email Address"
+              type="email"
+              fullWidth
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="friend@example.com"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setInviteDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleSendInvite}
+              variant="contained"
+              disabled={sendingInvite || !inviteEmail.trim()}
+              startIcon={<SendIcon />}
+            >
+              {sendingInvite ? 'Sending...' : 'Send Invite'}
             </Button>
           </DialogActions>
         </Dialog>

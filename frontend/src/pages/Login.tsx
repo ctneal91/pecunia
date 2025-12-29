@@ -1,4 +1,4 @@
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -25,13 +25,15 @@ const INITIAL_VALUES: LoginFormValues = {
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
 
   const { values, error, loading, handleChange, handleSubmit } = useForm({
     initialValues: INITIAL_VALUES,
     onSubmit: async ({ email, password }) => {
       const err = await login(email, password);
       if (!err) {
-        navigate('/');
+        navigate(redirectTo);
       }
       return err;
     },
@@ -85,7 +87,7 @@ export default function Login() {
 
           <Typography align="center">
             Don't have an account?{' '}
-            <Link component={RouterLink} to="/register">
+            <Link component={RouterLink} to={redirectTo !== '/' ? `/register?redirect=${encodeURIComponent(redirectTo)}` : '/register'}>
               Sign up
             </Link>
           </Typography>

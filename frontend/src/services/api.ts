@@ -1,5 +1,5 @@
 import { Goal, GoalInput, Contribution, ContributionInput } from '../types/goal';
-import { Group, GroupWithMembers, GroupInput, Membership } from '../types/group';
+import { Group, GroupWithMembers, GroupInput, Membership, GroupInvite, PendingInvite, InviteDetails } from '../types/group';
 
 const API_BASE = '/api/v1';
 
@@ -228,4 +228,35 @@ export const api = {
     request<void>(`/groups/${groupId}/memberships/${membershipId}`, {
       method: 'DELETE',
     }),
+
+  // Group Invites
+  getGroupInvites: (groupId: number) =>
+    request<{ invites: GroupInvite[] }>(`/groups/${groupId}/invites`),
+
+  sendInvite: (groupId: number, email: string) =>
+    request<{ invite: GroupInvite }>(`/groups/${groupId}/invites`, {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resendInvite: (groupId: number, inviteId: number) =>
+    request<{ invite: GroupInvite; message: string }>(`/groups/${groupId}/invites/${inviteId}/resend`, {
+      method: 'POST',
+    }),
+
+  getInviteDetails: (token: string) =>
+    request<{ invite: InviteDetails }>(`/invites/${token}`),
+
+  acceptInvite: (token: string) =>
+    request<{ group: Group }>(`/invites/${token}/accept`, {
+      method: 'POST',
+    }),
+
+  declineInvite: (token: string) =>
+    request<{ message: string }>(`/invites/${token}/decline`, {
+      method: 'POST',
+    }),
+
+  getPendingInvites: () =>
+    request<{ invites: PendingInvite[] }>('/invites/pending'),
 };

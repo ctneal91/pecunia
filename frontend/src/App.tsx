@@ -13,6 +13,7 @@ import GoalForm from './pages/GoalForm';
 import GoalDetail from './pages/GoalDetail';
 import Groups from './pages/Groups';
 import GroupDetail from './pages/GroupDetail';
+import AcceptInvite from './pages/AcceptInvite';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
                 <Route path="goals/:id/edit" element={<GoalForm />} />
                 <Route path="groups" element={<Groups />} />
                 <Route path="groups/:id" element={<GroupDetail />} />
+                <Route path="invites/:token" element={<AcceptInvite />} />
               </Route>
             </Routes>
           </BrowserRouter>

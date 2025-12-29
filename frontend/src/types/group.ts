@@ -25,3 +25,27 @@ export interface Membership {
 export interface GroupInput {
   name: string;
 }
+
+export interface GroupInvite {
+  id: number;
+  email: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  expired: boolean;
+  invited_at: string;
+  accepted_at: string | null;
+}
+
+export interface PendingInvite {
+  token: string;
+  group_name: string;
+  inviter_name: string;
+  invited_at: string;
+}
+
+export interface InviteDetails {
+  id: number;
+  status: string;
+  group_name: string;
+  inviter_name: string;
+  expired: boolean;
+}
