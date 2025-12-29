@@ -1,0 +1,25 @@
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "lint:ruby": "bundle exec rubocop",
+    "lint:frontend": "cd frontend && npm run lint",
+    "typecheck": "cd frontend && npm run typecheck",
+    "lint": "npm run lint:ruby && npm run lint:frontend && npm run typecheck",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+    "*.rb": [
+      "bundle exec rubocop --autocorrect"
+    ],
+    "frontend/src/**/*.{ts,tsx}": [
+      "bash -c 'cd frontend && npm run lint'",
+      "bash -c 'cd frontend && npm run typecheck'"
+    ]
+  }
+}

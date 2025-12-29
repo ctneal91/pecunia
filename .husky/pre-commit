@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+
+# Source nvm if available (for CI environments that need it)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+npx lint-staged
+
+# Always run Rails test suite
+echo "Running Rails test suite..."
+bundle exec rspec --format progress
+if [ $? -ne 0 ]; then
+  echo "Rails tests failed or coverage is below threshold"
+  exit 1
+fi
+
+# Always run React test suite
+echo "Running React test suite..."
+cd frontend && npm test -- --coverage --watchAll=false
+if [ $? -ne 0 ]; then
+  echo "React tests failed or coverage is below threshold"
+  exit 1
+fi
