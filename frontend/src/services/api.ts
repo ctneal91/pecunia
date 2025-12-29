@@ -1,3 +1,5 @@
+import { Goal, GoalInput } from '../types/goal';
+
 const API_BASE = '/api/v1';
 
 export interface ApiResponse<T> {
@@ -53,6 +55,14 @@ interface MeResponse {
   user: User | null;
 }
 
+interface GoalsResponse {
+  goals: Goal[];
+}
+
+interface GoalResponse {
+  goal: Goal;
+}
+
 export const api = {
   signup: (email: string, password: string, passwordConfirmation: string, name?: string) =>
     request<AuthResponse>('/signup', {
@@ -82,5 +92,32 @@ export const api = {
     request<AuthResponse>('/me', {
       method: 'PATCH',
       body: JSON.stringify(data),
+    }),
+
+  getGoals: () => request<GoalsResponse>('/goals'),
+
+  getGoal: (id: number) => request<GoalResponse>(`/goals/${id}`),
+
+  createGoal: (data: GoalInput) =>
+    request<GoalResponse>('/goals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateGoal: (id: number, data: Partial<GoalInput>) =>
+    request<GoalResponse>(`/goals/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  deleteGoal: (id: number) =>
+    request<void>(`/goals/${id}`, {
+      method: 'DELETE',
+    }),
+
+  bulkCreateGoals: (goals: GoalInput[]) =>
+    request<GoalsResponse>('/goals/bulk_create', {
+      method: 'POST',
+      body: JSON.stringify({ goals }),
     }),
 };

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api, User, ApiResponse } from '../services/api';
+import { goalStorage } from '../services/goalStorage';
+import { GoalInput } from '../types/goal';
 
 interface ProfileData {
   name?: string;
@@ -18,6 +20,27 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+async function syncGuestGoals(): Promise<void> {
+  const guestGoals = goalStorage.getAll();
+  if (guestGoals.length === 0) return;
+
+  const goalsToSync: GoalInput[] = guestGoals.map((g) => ({
+    title: g.title,
+    description: g.description || undefined,
+    target_amount: g.target_amount,
+    current_amount: g.current_amount,
+    goal_type: g.goal_type,
+    target_date: g.target_date || undefined,
+    icon: g.icon || undefined,
+    color: g.color || undefined,
+  }));
+
+  const response = await api.bulkCreateGoals(goalsToSync);
+  if (!response.error) {
+    goalStorage.clear();
+  }
+}
 
 function handleAuthResponse(
   response: ApiResponse<{ user: User }>,
@@ -50,7 +73,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     const response = await api.login(email, password);
-    return handleAuthResponse(response, setUser);
+    const error = handleAuthResponse(response, setUser);
+    if (!error) {
+      await syncGuestGoals();
+    }
+    return error;
   }, []);
 
   const signup = useCallback(async (
@@ -60,7 +87,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     name?: string
   ): Promise<string | null> => {
     const response = await api.signup(email, password, passwordConfirmation, name);
-    return handleAuthResponse(response, setUser);
+    const error = handleAuthResponse(response, setUser);
+    if (!error) {
+      await syncGuestGoals();
+    }
+    return error;
   }, []);
 
   const logout = useCallback(async () => {

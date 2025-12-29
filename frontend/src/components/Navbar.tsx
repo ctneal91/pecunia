@@ -37,10 +37,14 @@ export default function Navbar() {
           variant="h6"
           component={RouterLink}
           to="/"
-          sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
+          sx={{ textDecoration: 'none', color: 'inherit', mr: 4 }}
         >
           Pecunia
         </Typography>
+
+        <Button color="inherit" component={RouterLink} to="/goals" sx={{ flexGrow: 1 }}>
+          Goals
+        </Button>
 
         {user ? (
           <Box>
