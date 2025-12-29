@@ -169,6 +169,9 @@ cd frontend && npm test
 cd frontend && npm run typecheck
 ```
 
+## Split from
+[My blueprint repository](https://github.com/ctneal91/heroku-deployable-rails-app-template) at commit [4365b3d30a3d56caa06c1822490a1c1e416f2d49](https://github.com/ctneal91/heroku-deployable-rails-app-template/tree/4365b3d30a3d56caa06c1822490a1c1e416f2d49)
+
 ## License
 
 MIT
