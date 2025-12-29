@@ -96,7 +96,7 @@ describe('Navbar', () => {
     renderNavbar();
 
     await waitFor(() => {
-      const titleLink = screen.getByRole('link', { name: /my app/i });
+      const titleLink = screen.getByRole('link', { name: /pecunia/i });
       expect(titleLink).toBeInTheDocument();
       expect(titleLink).toHaveAttribute('href', '/');
     });

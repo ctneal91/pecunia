@@ -39,7 +39,7 @@ export default function Navbar() {
           to="/"
           sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
         >
-          My App
+          Pecunia
         </Typography>
 
         {user ? (

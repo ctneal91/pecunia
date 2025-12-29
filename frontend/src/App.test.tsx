@@ -3,7 +3,7 @@ import App from './App';
 
 test('renders app with navigation', () => {
   render(<App />);
-  const appTitle = screen.getByText(/My App/i);
+  const appTitle = screen.getByText(/Pecunia/i);
   expect(appTitle).toBeInTheDocument();
 });
 
