@@ -16,6 +16,13 @@ Rails.application.routes.draw do
       # Current user
       get "me", to: "users#me"
       patch "me", to: "users#update"
+
+      # Goals
+      resources :goals, only: [ :index, :show, :create, :update, :destroy ] do
+        collection do
+          post :bulk_create
+        end
+      end
     end
   end
 
