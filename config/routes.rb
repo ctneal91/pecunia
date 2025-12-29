@@ -22,6 +22,7 @@ Rails.application.routes.draw do
         collection do
           post :bulk_create
         end
+        resources :contributions, only: [ :index, :create, :update, :destroy ]
       end
     end
   end
