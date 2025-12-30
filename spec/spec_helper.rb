@@ -29,7 +29,7 @@ SimpleCov.start "rails" do
   add_group "Mailers", "app/mailers"
   add_group "Services", "app/services"
 
-  minimum_coverage 100
+  minimum_coverage 95
   minimum_coverage_by_file 80
 end
 

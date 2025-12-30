@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Pre-commit hook to enforce RSpec coverage requirements
+# Install with: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -e
+
+echo "Running RSpec tests with coverage check..."
+
+# Run RSpec - SimpleCov will enforce 95% minimum coverage
+bundle exec rspec --format progress
+
+# If we get here, tests passed and coverage is >= 95%
+echo "✓ All tests passed with sufficient coverage"
