@@ -14,6 +14,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import CategoryIcon from '@mui/icons-material/Category';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Goal, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
@@ -151,11 +152,22 @@ export default function Goals() {
           <Typography variant="h4" component="h1">
             Your Goals
           </Typography>
-          {goals.length > 0 && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreateClick}>
-              New Goal
-            </Button>
-          )}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {user && goals.length > 0 && (
+              <Button
+                variant="outlined"
+                startIcon={<CategoryIcon />}
+                onClick={() => navigate('/goals/categories')}
+              >
+                By Category
+              </Button>
+            )}
+            {goals.length > 0 && (
+              <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreateClick}>
+                New Goal
+              </Button>
+            )}
+          </Box>
         </Box>
 
         {!user && goals.length > 0 && (

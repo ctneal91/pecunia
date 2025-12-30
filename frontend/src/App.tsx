@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Goals from './pages/Goals';
+import GoalsByCategory from './pages/GoalsByCategory';
 import GoalForm from './pages/GoalForm';
 import GoalDetail from './pages/GoalDetail';
 import Groups from './pages/Groups';
@@ -29,6 +30,7 @@ function App() {
                 <Route path="register" element={<Register />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="goals" element={<Goals />} />
+                <Route path="goals/categories" element={<GoalsByCategory />} />
                 <Route path="goals/new" element={<GoalForm />} />
                 <Route path="goals/:id" element={<GoalDetail />} />
                 <Route path="goals/:id/edit" element={<GoalForm />} />

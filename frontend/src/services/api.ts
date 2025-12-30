@@ -1,4 +1,4 @@
-import { Goal, GoalInput, Contribution, ContributionInput, RecurringContribution, RecurringContributionInput } from '../types/goal';
+import { Goal, GoalInput, Contribution, ContributionInput, RecurringContribution, RecurringContributionInput, CategoryStats } from '../types/goal';
 import { Group, GroupWithMembers, GroupInput, Membership, GroupInvite, PendingInvite, InviteDetails } from '../types/group';
 
 const API_BASE = '/api/v1';
@@ -80,6 +80,10 @@ interface RecurringContributionsResponse {
 
 interface RecurringContributionResponse {
   recurring_contribution: RecurringContribution;
+}
+
+interface CategoriesResponse {
+  categories: CategoryStats[];
 }
 
 export interface DashboardStats {
@@ -289,4 +293,7 @@ export const api = {
     request<{ message: string }>(`/goals/${goalId}/recurring_contributions/${id}`, {
       method: 'DELETE',
     }),
+
+  // Categories
+  getGoalsByCategory: () => request<CategoriesResponse>('/goals/by_category'),
 };

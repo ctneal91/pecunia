@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       resources :goals, only: [ :index, :show, :create, :update, :destroy ] do
         collection do
           post :bulk_create
+          get :by_category
         end
         resources :contributions, only: [ :index, :create, :update, :destroy ]
         resources :recurring_contributions, only: [ :index, :create, :update, :destroy ]

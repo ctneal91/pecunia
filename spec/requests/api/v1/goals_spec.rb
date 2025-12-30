@@ -193,4 +193,89 @@ RSpec.describe 'Api::V1::Goals', type: :request do
       end
     end
   end
+
+  describe 'GET /api/v1/goals/by_category' do
+    context 'when not logged in' do
+      it 'returns unauthorized' do
+        get '/api/v1/goals/by_category'
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when logged in' do
+      before { login_user }
+
+      it 'returns categories array with all goal types' do
+        get '/api/v1/goals/by_category'
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json['categories']).to be_an(Array)
+        expect(json['categories'].length).to eq(Goal::GOAL_TYPES.length)
+      end
+
+      it 'returns empty goals array for categories with no goals' do
+        get '/api/v1/goals/by_category'
+        json = JSON.parse(response.body)
+        savings_category = json['categories'].find { |c| c['goal_type'] == 'savings' }
+        expect(savings_category['goals']).to eq([])
+        expect(savings_category['goal_count']).to eq(0)
+      end
+
+      it 'groups goals by their type' do
+        create(:goal, :with_user, user: user, goal_type: 'savings', title: 'Savings 1')
+        create(:goal, :with_user, user: user, goal_type: 'savings', title: 'Savings 2')
+        create(:goal, :with_user, user: user, goal_type: 'vacation', title: 'Vacation')
+
+        get '/api/v1/goals/by_category'
+        json = JSON.parse(response.body)
+
+        savings_category = json['categories'].find { |c| c['goal_type'] == 'savings' }
+        vacation_category = json['categories'].find { |c| c['goal_type'] == 'vacation' }
+        emergency_category = json['categories'].find { |c| c['goal_type'] == 'emergency_fund' }
+
+        expect(savings_category['goal_count']).to eq(2)
+        expect(vacation_category['goal_count']).to eq(1)
+        expect(emergency_category['goal_count']).to eq(0)
+      end
+
+      it 'calculates category statistics correctly' do
+        create(:goal, :with_user, user: user, goal_type: 'savings', target_amount: 1000, current_amount: 500)
+        create(:goal, :with_user, user: user, goal_type: 'savings', target_amount: 2000, current_amount: 1000)
+
+        get '/api/v1/goals/by_category'
+        json = JSON.parse(response.body)
+
+        savings_category = json['categories'].find { |c| c['goal_type'] == 'savings' }
+        expect(savings_category['total_saved'].to_f).to eq(1500.0)
+        expect(savings_category['total_target'].to_f).to eq(3000.0)
+        expect(savings_category['progress'].to_f).to eq(50.0)
+        expect(savings_category['active_count']).to eq(2)
+        expect(savings_category['completed_count']).to eq(0)
+      end
+
+      it 'counts completed goals correctly' do
+        create(:goal, :with_user, user: user, goal_type: 'savings', target_amount: 1000, current_amount: 500)
+        create(:goal, :with_user, :completed, user: user, goal_type: 'savings')
+
+        get '/api/v1/goals/by_category'
+        json = JSON.parse(response.body)
+
+        savings_category = json['categories'].find { |c| c['goal_type'] == 'savings' }
+        expect(savings_category['completed_count']).to eq(1)
+        expect(savings_category['active_count']).to eq(1)
+      end
+
+      it 'does not include other users goals' do
+        other_user = create(:user, email: 'other@example.com')
+        create(:goal, :with_user, user: user, goal_type: 'savings')
+        create(:goal, :with_user, user: other_user, goal_type: 'savings')
+
+        get '/api/v1/goals/by_category'
+        json = JSON.parse(response.body)
+
+        savings_category = json['categories'].find { |c| c['goal_type'] == 'savings' }
+        expect(savings_category['goal_count']).to eq(1)
+      end
+    end
+  end
 end

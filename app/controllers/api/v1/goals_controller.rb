@@ -9,6 +9,12 @@ module Api
         render json: { goals: goals.map { |g| GoalSerializer.new(g).as_json } }
       end
 
+      def by_category
+        goals = accessible_goals.includes(:group).order(created_at: :desc)
+        categories = CategoryAggregator.new(goals).aggregate
+        render json: { categories: categories }
+      end
+
       def show
         process_recurring_contributions
         @goal.reload

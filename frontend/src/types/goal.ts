@@ -146,3 +146,14 @@ export interface RecurringContributionInput {
   end_date?: string;
   note?: string;
 }
+
+export interface CategoryStats {
+  goal_type: GoalType;
+  goal_count: number;
+  total_saved: number;
+  total_target: number;
+  progress: number;
+  completed_count: number;
+  active_count: number;
+  goals: Goal[];
+}
