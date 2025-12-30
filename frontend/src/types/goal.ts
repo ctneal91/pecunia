@@ -116,3 +116,33 @@ export interface ContributionInput {
   note?: string;
   contributed_at: string;
 }
+
+export type RecurringFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly';
+
+export const FREQUENCY_LABELS: Record<RecurringFrequency, string> = {
+  daily: 'Daily',
+  weekly: 'Weekly',
+  biweekly: 'Bi-weekly',
+  monthly: 'Monthly',
+};
+
+export interface RecurringContribution {
+  id: number;
+  goal_id: number;
+  user_id: number;
+  amount: number;
+  frequency: RecurringFrequency;
+  next_occurrence_at: string;
+  end_date: string | null;
+  is_active: boolean;
+  note: string | null;
+  created_at: string;
+}
+
+export interface RecurringContributionInput {
+  amount: number;
+  frequency: RecurringFrequency;
+  next_occurrence_at: string;
+  end_date?: string;
+  note?: string;
+}

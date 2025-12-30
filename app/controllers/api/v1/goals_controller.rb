@@ -10,6 +10,8 @@ module Api
       end
 
       def show
+        process_recurring_contributions
+        @goal.reload
         render json: { goal: GoalSerializer.new(@goal).as_json }
       end
 
@@ -88,6 +90,10 @@ module Api
 
       def goal_params
         params.permit(:title, :description, :target_amount, :current_amount, :goal_type, :target_date, :icon, :color, :group_id)
+      end
+
+      def process_recurring_contributions
+        RecurringContributionProcessor.process_for_goal(@goal)
       end
     end
   end

@@ -25,13 +25,16 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
-import { Goal, Contribution, ContributionInput, Contributor, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
+import { Goal, Contribution, ContributionInput, Contributor, RecurringContribution, RecurringContributionInput, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
 import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import MilestoneCelebration from '../../components/MilestoneCelebration';
 import MilestoneProgress from '../../components/MilestoneProgress';
 import ProgressChart from '../../components/ProgressChart';
 import SavingsProjection from '../../components/SavingsProjection';
+import RecurringContributionForm from '../../components/RecurringContributionForm';
+import RecurringContributionList from '../../components/RecurringContributionList';
+import RepeatIcon from '@mui/icons-material/Repeat';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -58,6 +61,7 @@ export default function GoalDetail() {
 
   const [goal, setGoal] = useState<Goal | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [recurringContributions, setRecurringContributions] = useState<RecurringContribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,6 +70,8 @@ export default function GoalDetail() {
   const [isWithdrawal, setIsWithdrawal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [newMilestones, setNewMilestones] = useState<number[]>([]);
+  const [showRecurringForm, setShowRecurringForm] = useState(false);
+  const [recurringLoading, setRecurringLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -86,6 +92,12 @@ export default function GoalDetail() {
       api.getContributions(foundGoal.id).then((response) => {
         if (response.data) {
           setContributions(response.data.contributions);
+        }
+      });
+
+      api.getRecurringContributions(foundGoal.id).then((response) => {
+        if (response.data) {
+          setRecurringContributions(response.data.recurring_contributions);
         }
       });
     } else if (foundGoal) {
@@ -153,6 +165,39 @@ export default function GoalDetail() {
       setContributions((prev) => prev.filter((c) => c.id !== contributionId));
       setGoal(response.data.goal);
       await refreshGoals();
+    }
+  };
+
+  const handleCreateRecurring = async (data: RecurringContributionInput) => {
+    if (!goal || typeof goal.id !== 'number') return;
+
+    setRecurringLoading(true);
+    const response = await api.createRecurringContribution(goal.id, data);
+    if (response.data) {
+      setRecurringContributions((prev) => [...prev, response.data!.recurring_contribution]);
+      setShowRecurringForm(false);
+    }
+    setRecurringLoading(false);
+  };
+
+  const handleToggleRecurringActive = async (id: number, isActive: boolean) => {
+    if (!goal || typeof goal.id !== 'number') return;
+
+    const response = await api.updateRecurringContribution(goal.id, id, { is_active: isActive });
+    if (response.data) {
+      setRecurringContributions((prev) =>
+        prev.map((rc) => (rc.id === id ? response.data!.recurring_contribution : rc))
+      );
+    }
+  };
+
+  const handleDeleteRecurring = async (id: number) => {
+    if (!goal || typeof goal.id !== 'number') return;
+    if (!window.confirm('Delete this recurring contribution?')) return;
+
+    const response = await api.deleteRecurringContribution(goal.id, id);
+    if (!response.error) {
+      setRecurringContributions((prev) => prev.filter((rc) => rc.id !== id));
     }
   };
 
@@ -360,6 +405,45 @@ export default function GoalDetail() {
             </Box>
           </Box>
         </Paper>
+
+        {user && (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <RepeatIcon color="primary" />
+                <Typography variant="h6">
+                  Recurring Contributions
+                </Typography>
+              </Box>
+              {!showRecurringForm && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={() => setShowRecurringForm(true)}
+                >
+                  Add Recurring
+                </Button>
+              )}
+            </Box>
+
+            {showRecurringForm && (
+              <Box sx={{ mb: 2 }}>
+                <RecurringContributionForm
+                  onSubmit={handleCreateRecurring}
+                  onCancel={() => setShowRecurringForm(false)}
+                  loading={recurringLoading}
+                />
+              </Box>
+            )}
+
+            <RecurringContributionList
+              recurringContributions={recurringContributions}
+              onToggleActive={handleToggleRecurringActive}
+              onDelete={handleDeleteRecurring}
+            />
+          </Paper>
+        )}
 
         {user && contributions.length > 0 && (
           <Paper sx={{ p: 3, mb: 3 }}>

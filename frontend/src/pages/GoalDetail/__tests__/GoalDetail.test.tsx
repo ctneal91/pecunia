@@ -85,6 +85,7 @@ describe('GoalDetail', () => {
     jest.clearAllMocks();
     localStorage.clear();
     mockedApi.getContributions.mockResolvedValue({ data: { contributions: [] } });
+    mockedApi.getRecurringContributions.mockResolvedValue({ data: { recurring_contributions: [] } });
   });
 
   describe('when goal not found', () => {

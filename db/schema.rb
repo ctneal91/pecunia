@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_30_195323) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_205611) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,6 +90,23 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_195323) do
     t.index ["goal_id"], name: "index_milestones_on_goal_id"
   end
 
+  create_table "recurring_contributions", force: :cascade do |t|
+    t.decimal "amount", precision: 15, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "end_date"
+    t.string "frequency", null: false
+    t.bigint "goal_id", null: false
+    t.boolean "is_active", default: true, null: false
+    t.datetime "next_occurrence_at", null: false
+    t.text "note"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["goal_id"], name: "index_recurring_contributions_on_goal_id"
+    t.index ["is_active"], name: "index_recurring_contributions_on_is_active"
+    t.index ["next_occurrence_at"], name: "index_recurring_contributions_on_next_occurrence_at"
+    t.index ["user_id"], name: "index_recurring_contributions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "avatar_url"
     t.datetime "created_at", null: false
@@ -110,4 +127,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_195323) do
   add_foreign_key "memberships", "groups"
   add_foreign_key "memberships", "users"
   add_foreign_key "milestones", "goals"
+  add_foreign_key "recurring_contributions", "goals"
+  add_foreign_key "recurring_contributions", "users"
 end

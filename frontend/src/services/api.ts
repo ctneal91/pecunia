@@ -1,4 +1,4 @@
-import { Goal, GoalInput, Contribution, ContributionInput } from '../types/goal';
+import { Goal, GoalInput, Contribution, ContributionInput, RecurringContribution, RecurringContributionInput } from '../types/goal';
 import { Group, GroupWithMembers, GroupInput, Membership, GroupInvite, PendingInvite, InviteDetails } from '../types/group';
 
 const API_BASE = '/api/v1';
@@ -72,6 +72,14 @@ interface ContributionResponse {
   contribution: Contribution;
   goal: Goal;
   new_milestones?: number[];
+}
+
+interface RecurringContributionsResponse {
+  recurring_contributions: RecurringContribution[];
+}
+
+interface RecurringContributionResponse {
+  recurring_contribution: RecurringContribution;
 }
 
 export interface DashboardStats {
@@ -260,4 +268,25 @@ export const api = {
 
   getPendingInvites: () =>
     request<{ invites: PendingInvite[] }>('/invites/pending'),
+
+  // Recurring Contributions
+  getRecurringContributions: (goalId: number) =>
+    request<RecurringContributionsResponse>(`/goals/${goalId}/recurring_contributions`),
+
+  createRecurringContribution: (goalId: number, data: RecurringContributionInput) =>
+    request<RecurringContributionResponse>(`/goals/${goalId}/recurring_contributions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateRecurringContribution: (goalId: number, id: number, data: Partial<RecurringContributionInput> & { is_active?: boolean }) =>
+    request<RecurringContributionResponse>(`/goals/${goalId}/recurring_contributions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  deleteRecurringContribution: (goalId: number, id: number) =>
+    request<{ message: string }>(`/goals/${goalId}/recurring_contributions/${id}`, {
+      method: 'DELETE',
+    }),
 };

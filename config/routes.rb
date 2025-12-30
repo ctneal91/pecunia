@@ -26,6 +26,7 @@ Rails.application.routes.draw do
           post :bulk_create
         end
         resources :contributions, only: [ :index, :create, :update, :destroy ]
+        resources :recurring_contributions, only: [ :index, :create, :update, :destroy ]
       end
 
       # Groups
