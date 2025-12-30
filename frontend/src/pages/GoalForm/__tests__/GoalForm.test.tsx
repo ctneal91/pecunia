@@ -50,12 +50,77 @@ const renderGoalForm = (id?: string) => {
   );
 };
 
+// Helper to skip to form step in create mode
+const skipToFormStep = async () => {
+  await waitFor(() => {
+    expect(screen.getByText(/skip - create custom goal/i)).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText(/skip - create custom goal/i));
+  await waitFor(() => {
+    expect(screen.getByLabelText(/goal title/i)).toBeInTheDocument();
+  });
+};
+
 describe('GoalForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
     mockedApi.getMe.mockResolvedValue({ data: { user: null } });
     mockedApi.getGroups.mockResolvedValue({ data: { groups: [] } });
+  });
+
+  describe('template selection step', () => {
+    it('shows template selection on create', async () => {
+      renderGoalForm();
+
+      await waitFor(() => {
+        expect(screen.getByText('Choose Template')).toBeInTheDocument();
+        expect(screen.getByText('Customize Goal')).toBeInTheDocument();
+      });
+    });
+
+    it('shows template categories', async () => {
+      renderGoalForm();
+
+      await waitFor(() => {
+        expect(screen.getByText('Emergency Fund')).toBeInTheDocument();
+        expect(screen.getByText('Travel & Vacation')).toBeInTheDocument();
+      });
+    });
+
+    it('allows skipping to custom goal', async () => {
+      renderGoalForm();
+
+      await skipToFormStep();
+
+      expect(screen.getByLabelText(/goal title/i)).toBeInTheDocument();
+    });
+
+    it('pre-fills form when template selected', async () => {
+      renderGoalForm();
+
+      await waitFor(() => {
+        expect(screen.getByText('Emergency Fund')).toBeInTheDocument();
+      });
+
+      // Expand category and select template
+      const categoryButton = screen.getByText('Emergency Fund').closest('button');
+      fireEvent.click(categoryButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Starter Emergency Fund')).toBeInTheDocument();
+      });
+
+      const templateCard = screen.getByText('Starter Emergency Fund').closest('div[class*="MuiPaper"]');
+      fireEvent.click(templateCard!);
+
+      // Continue to form
+      fireEvent.click(screen.getByText('Continue with Template'));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/goal title/i)).toHaveValue('Starter Emergency Fund');
+      });
+    });
   });
 
   describe('create mode (guest)', () => {
@@ -67,20 +132,16 @@ describe('GoalForm', () => {
       });
     });
 
-    it('shows create button', async () => {
+    it('shows create button after skipping templates', async () => {
       renderGoalForm();
+      await skipToFormStep();
 
-      await waitFor(() => {
-        expect(screen.getByText('Create Goal')).toBeInTheDocument();
-      });
+      expect(screen.getByText('Create Goal')).toBeInTheDocument();
     });
 
     it('validates required title', async () => {
       renderGoalForm();
-
-      await waitFor(() => {
-        expect(screen.getByText('Create Goal')).toBeInTheDocument();
-      });
+      await skipToFormStep();
 
       const targetInput = screen.getByLabelText(/target amount/i);
       fireEvent.change(targetInput, { target: { value: '1000' } });
@@ -94,10 +155,7 @@ describe('GoalForm', () => {
 
     it('validates target amount', async () => {
       renderGoalForm();
-
-      await waitFor(() => {
-        expect(screen.getByText('Create Goal')).toBeInTheDocument();
-      });
+      await skipToFormStep();
 
       const titleInput = screen.getByLabelText(/goal title/i);
       fireEvent.change(titleInput, { target: { value: 'Test Goal' } });
@@ -109,7 +167,7 @@ describe('GoalForm', () => {
       });
     });
 
-    it('navigates back when cancel clicked', async () => {
+    it('navigates back when cancel clicked on template step', async () => {
       renderGoalForm();
 
       await waitFor(() => {
@@ -122,10 +180,7 @@ describe('GoalForm', () => {
 
     it('creates goal and navigates', async () => {
       renderGoalForm();
-
-      await waitFor(() => {
-        expect(screen.getByText('Create Goal')).toBeInTheDocument();
-      });
+      await skipToFormStep();
 
       const titleInput = screen.getByLabelText(/goal title/i);
       fireEvent.change(titleInput, { target: { value: 'New Goal' } });
@@ -149,12 +204,14 @@ describe('GoalForm', () => {
       mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal] } });
     });
 
-    it('shows edit form title', async () => {
+    it('shows edit form title without template step', async () => {
       renderGoalForm('1');
 
       await waitFor(() => {
         expect(screen.getByText('Edit Goal')).toBeInTheDocument();
       });
+      // Should not show template step
+      expect(screen.queryByText('Choose Template')).not.toBeInTheDocument();
     });
 
     it('populates form with existing goal data', async () => {
@@ -185,8 +242,9 @@ describe('GoalForm', () => {
       });
     });
 
-    it('shows group selection when logged in with groups', async () => {
+    it('shows group selection after skipping to form', async () => {
       renderGoalForm();
+      await skipToFormStep();
 
       await waitFor(() => {
         expect(screen.getByLabelText(/share with group/i)).toBeInTheDocument();

@@ -1,5 +1,5 @@
 class Goal < ApplicationRecord
-  GOAL_TYPES = %w[emergency_fund savings debt_payoff retirement vacation home other].freeze
+  GOAL_TYPES = %w[emergency_fund savings debt_payoff retirement vacation home education vehicle other].freeze
 
   belongs_to :user, optional: true
   belongs_to :group, optional: true

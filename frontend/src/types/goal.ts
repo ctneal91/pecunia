@@ -5,6 +5,8 @@ export type GoalType =
   | 'retirement'
   | 'vacation'
   | 'home'
+  | 'education'
+  | 'vehicle'
   | 'other';
 
 export interface Contributor {
@@ -70,6 +72,8 @@ export const GOAL_TYPE_LABELS: Record<GoalType, string> = {
   retirement: 'Retirement',
   vacation: 'Vacation',
   home: 'Home',
+  education: 'Education',
+  vehicle: 'Vehicle',
   other: 'Other',
 };
 
@@ -80,6 +84,8 @@ export const GOAL_TYPE_ICONS: Record<GoalType, string> = {
   retirement: '🏖️',
   vacation: '✈️',
   home: '🏠',
+  education: '📚',
+  vehicle: '🚗',
   other: '🎯',
 };
 
@@ -90,6 +96,8 @@ export const GOAL_TYPE_COLORS: Record<GoalType, string> = {
   retirement: '#9C27B0',
   vacation: '#00BCD4',
   home: '#795548',
+  education: '#FF9800',
+  vehicle: '#3F51B5',
   other: '#607D8B',
 };
 
