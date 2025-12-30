@@ -20,6 +20,12 @@ Rails.application.routes.draw do
       # Dashboard
       get "dashboard", to: "dashboard#index"
 
+      # Exports
+      get "exports/goals", to: "exports#goals"
+      get "exports/contributions", to: "exports#contributions"
+      get "exports/summary", to: "exports#summary"
+      get "exports/goals/:goal_id/report", to: "exports#goal_report"
+
       # Goals
       resources :goals, only: [ :index, :show, :create, :update, :destroy ] do
         collection do

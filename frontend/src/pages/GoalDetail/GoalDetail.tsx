@@ -22,6 +22,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
@@ -35,6 +36,7 @@ import SavingsProjection from '../../components/SavingsProjection';
 import RecurringContributionForm from '../../components/RecurringContributionForm';
 import RecurringContributionList from '../../components/RecurringContributionList';
 import RepeatIcon from '@mui/icons-material/Repeat';
+import { exportGoalReport } from '../../utils/export';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -72,6 +74,7 @@ export default function GoalDetail() {
   const [newMilestones, setNewMilestones] = useState<number[]>([]);
   const [showRecurringForm, setShowRecurringForm] = useState(false);
   const [recurringLoading, setRecurringLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -248,13 +251,32 @@ export default function GoalDetail() {
                 </Typography>
               </Box>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<EditIcon />}
-              onClick={() => navigate(`/goals/${goal.id}/edit`)}
-            >
-              Edit
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {user && typeof goal.id === 'number' && (
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={async () => {
+                    setExporting(true);
+                    try {
+                      await exportGoalReport(goal.id as number, goal.title);
+                    } finally {
+                      setExporting(false);
+                    }
+                  }}
+                  disabled={exporting}
+                >
+                  {exporting ? 'Exporting...' : 'Export'}
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={() => navigate(`/goals/${goal.id}/edit`)}
+              >
+                Edit
+              </Button>
+            </Box>
           </Box>
 
           {goal.description && (

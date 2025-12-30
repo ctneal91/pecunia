@@ -1,4 +1,5 @@
-import { Goal, GoalInput, Contribution, ContributionInput, RecurringContribution, RecurringContributionInput, CategoryStats } from '../types/goal';
+/* global URLSearchParams */
+import { Goal, GoalInput, Contribution, ContributionInput, RecurringContribution, RecurringContributionInput, CategoryStats, ExportSummary, GoalReport, ExportFormat } from '../types/goal';
 import { Group, GroupWithMembers, GroupInput, Membership, GroupInvite, PendingInvite, InviteDetails } from '../types/group';
 
 const API_BASE = '/api/v1';
@@ -296,4 +297,18 @@ export const api = {
 
   // Categories
   getGoalsByCategory: () => request<CategoriesResponse>('/goals/by_category'),
+
+  // Exports
+  exportGoals: (format: ExportFormat = 'json') =>
+    request<{ data: Goal[] }>(`/exports/goals?format=${format}`),
+
+  exportContributions: (format: ExportFormat = 'json', goalId?: number) => {
+    const params = new URLSearchParams({ format });
+    if (goalId) params.append('goal_id', goalId.toString());
+    return request<{ data: Contribution[] }>(`/exports/contributions?${params}`);
+  },
+
+  exportSummary: () => request<ExportSummary>('/exports/summary'),
+
+  exportGoalReport: (goalId: number) => request<GoalReport>(`/exports/goals/${goalId}/report`),
 };

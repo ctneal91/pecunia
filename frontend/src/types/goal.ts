@@ -157,3 +157,41 @@ export interface CategoryStats {
   active_count: number;
   goals: Goal[];
 }
+
+export type ExportFormat = 'json' | 'csv';
+
+export interface ExportSummary {
+  generated_at: string;
+  user: {
+    email: string;
+    name: string | null;
+  };
+  summary: {
+    total_goals: number;
+    total_saved: number;
+    total_target: number;
+    overall_progress: number;
+    completed_count: number;
+    active_count: number;
+  };
+  by_category: CategoryStats[];
+  goals: Goal[];
+}
+
+export interface GoalReport {
+  generated_at: string;
+  goal: Goal;
+  contributions: Contribution[];
+  recurring_contributions: RecurringContribution[];
+  statistics: {
+    total_contributions: number;
+    total_contributed: number;
+    average_contribution: number;
+    largest_contribution: number;
+    smallest_contribution: number;
+    first_contribution_date: string | null;
+    last_contribution_date: string | null;
+    milestones_achieved: number;
+    days_since_start: number;
+  };
+}

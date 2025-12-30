@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -15,9 +16,11 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CategoryIcon from '@mui/icons-material/Category';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Goal, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
+import ExportDialog from '../../components/ExportDialog';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -125,6 +128,7 @@ export default function Goals() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { goals, loading, error, deleteGoal } = useGoals();
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   const handleCreateClick = () => navigate('/goals/new');
   const handleEditClick = (goal: Goal) => navigate(`/goals/${goal.id}/edit`);
@@ -154,13 +158,22 @@ export default function Goals() {
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             {user && goals.length > 0 && (
-              <Button
-                variant="outlined"
-                startIcon={<CategoryIcon />}
-                onClick={() => navigate('/goals/categories')}
-              >
-                By Category
-              </Button>
+              <>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={() => setExportDialogOpen(true)}
+                >
+                  Export
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<CategoryIcon />}
+                  onClick={() => navigate('/goals/categories')}
+                >
+                  By Category
+                </Button>
+              </>
             )}
             {goals.length > 0 && (
               <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreateClick}>
@@ -196,6 +209,11 @@ export default function Goals() {
           ))
         )}
       </Box>
+
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+      />
     </Container>
   );
 }
