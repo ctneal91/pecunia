@@ -30,10 +30,12 @@ export default [
         HTMLInputElement: 'readonly',
         RequestInit: 'readonly',
         React: 'readonly',
+        clearTimeout: 'readonly',
         // Test globals
         test: 'readonly',
         expect: 'readonly',
         beforeEach: 'readonly',
+        afterEach: 'readonly',
         jest: 'readonly',
         global: 'readonly',
         describe: 'readonly',

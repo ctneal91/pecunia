@@ -28,6 +28,8 @@ import { api } from '../../services/api';
 import { Goal, Contribution, ContributionInput, Contributor, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
 import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
+import MilestoneCelebration from '../../components/MilestoneCelebration';
+import MilestoneProgress from '../../components/MilestoneProgress';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -61,6 +63,7 @@ export default function GoalDetail() {
   const [note, setNote] = useState('');
   const [isWithdrawal, setIsWithdrawal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [newMilestones, setNewMilestones] = useState<number[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -118,6 +121,9 @@ export default function GoalDetail() {
       } else if (response.data) {
         setContributions((prev) => [response.data!.contribution, ...prev]);
         setGoal(response.data.goal);
+        if (response.data.new_milestones && response.data.new_milestones.length > 0) {
+          setNewMilestones(response.data.new_milestones);
+        }
         await refreshGoals();
         setAmount('');
         setNote('');
@@ -234,6 +240,13 @@ export default function GoalDetail() {
               </Typography>
             </Box>
           </Box>
+
+          {user && goal.milestones && (
+            <MilestoneProgress
+              milestones={goal.milestones}
+              progressPercentage={goal.progress_percentage}
+            />
+          )}
 
           {goal.target_date && (
             <Typography variant="body2" color="text.secondary">
@@ -397,6 +410,14 @@ export default function GoalDetail() {
           </Alert>
         )}
       </Box>
+
+      {newMilestones.length > 0 && goal && (
+        <MilestoneCelebration
+          milestones={newMilestones}
+          goalTitle={goal.title}
+          onClose={() => setNewMilestones([])}
+        />
+      )}
     </Container>
   );
 }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_202449) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_195323) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -80,6 +80,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_202449) do
     t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
+  create_table "milestones", force: :cascade do |t|
+    t.datetime "achieved_at", null: false
+    t.datetime "created_at", null: false
+    t.bigint "goal_id", null: false
+    t.integer "percentage", null: false
+    t.datetime "updated_at", null: false
+    t.index ["goal_id", "percentage"], name: "index_milestones_on_goal_id_and_percentage", unique: true
+    t.index ["goal_id"], name: "index_milestones_on_goal_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "avatar_url"
     t.datetime "created_at", null: false
@@ -99,4 +109,5 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_202449) do
   add_foreign_key "groups", "users", column: "created_by_id"
   add_foreign_key "memberships", "groups"
   add_foreign_key "memberships", "users"
+  add_foreign_key "milestones", "goals"
 end

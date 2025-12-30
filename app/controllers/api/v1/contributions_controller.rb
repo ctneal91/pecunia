@@ -15,9 +15,13 @@ module Api
         contribution.user = current_user
 
         if contribution.save
+          @goal.reload
+          new_milestones = MilestoneTracker.new(@goal).check_and_record
+
           render json: {
             contribution: ContributionSerializer.new(contribution).as_json,
-            goal: GoalSerializer.new(@goal.reload).as_json
+            goal: GoalSerializer.new(@goal).as_json,
+            new_milestones: new_milestones.map(&:percentage)
           }, status: :created
         else
           render json: { errors: contribution.errors.full_messages }, status: :unprocessable_entity

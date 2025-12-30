@@ -4,6 +4,7 @@ class Goal < ApplicationRecord
   belongs_to :user, optional: true
   belongs_to :group, optional: true
   has_many :contributions, dependent: :destroy
+  has_many :milestones, dependent: :destroy
 
   validates :title, presence: true
   validates :target_amount, presence: true, numericality: { greater_than: 0 }

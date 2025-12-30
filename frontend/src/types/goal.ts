@@ -15,6 +15,20 @@ export interface Contributor {
   percentage: number;
 }
 
+export interface Milestone {
+  percentage: number;
+  achieved_at: string;
+}
+
+export const MILESTONE_PERCENTAGES = [25, 50, 75, 100] as const;
+
+export const MILESTONE_MESSAGES: Record<number, string> = {
+  25: "You're 25% there! Great start!",
+  50: "Halfway to your goal!",
+  75: "Almost there! Just 25% to go!",
+  100: "Congratulations! Goal reached!",
+};
+
 export interface Goal {
   id: number | string;
   title: string;
@@ -34,6 +48,7 @@ export interface Goal {
   updated_at: string;
   contributors?: Contributor[];
   contributor_count?: number;
+  milestones?: Milestone[];
 }
 
 export interface GoalInput {

@@ -71,6 +71,7 @@ interface ContributionsResponse {
 interface ContributionResponse {
   contribution: Contribution;
   goal: Goal;
+  new_milestones?: number[];
 }
 
 export interface DashboardStats {

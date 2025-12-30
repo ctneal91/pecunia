@@ -6,7 +6,7 @@ class GoalSerializer
   end
 
   def as_json
-    base_attributes.merge(contributor_attributes)
+    base_attributes.merge(contributor_attributes).merge(milestone_attributes)
   end
 
   private
@@ -65,5 +65,13 @@ class GoalSerializer
     return 0.0 if goal.current_amount.zero?
 
     ((amount / goal.current_amount) * 100).round(1)
+  end
+
+  def milestone_attributes
+    {
+      milestones: goal.milestones.ordered.map do |m|
+        { percentage: m.percentage, achieved_at: m.achieved_at }
+      end
+    }
   end
 end

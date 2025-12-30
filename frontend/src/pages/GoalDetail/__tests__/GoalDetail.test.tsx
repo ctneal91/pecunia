@@ -288,4 +288,40 @@ describe('GoalDetail', () => {
       expect(screen.queryByText(/shared goal in/i)).not.toBeInTheDocument();
     });
   });
+
+  describe('milestone progress display', () => {
+    const goalWithMilestones: Goal = {
+      ...mockGoal,
+      milestones: [
+        { percentage: 25, achieved_at: '2025-01-15T00:00:00Z' },
+      ],
+    };
+
+    beforeEach(() => {
+      mockedApi.getMe.mockResolvedValue({
+        data: { user: { id: 1, email: 'test@example.com', name: 'Test', avatar_url: null } }
+      });
+      mockedApi.getGoals.mockResolvedValue({ data: { goals: [goalWithMilestones] } });
+      mockedApi.getGoal.mockResolvedValue({ data: { goal: goalWithMilestones } });
+      mockedApi.getContributions.mockResolvedValue({ data: { contributions: [] } });
+    });
+
+    it('shows milestone progress section for logged in users', async () => {
+      renderGoalDetail();
+
+      await waitFor(() => {
+        expect(screen.getByText('Milestones')).toBeInTheDocument();
+      });
+    });
+
+    it('shows achieved milestones with check icons', async () => {
+      renderGoalDetail();
+
+      await waitFor(() => {
+        expect(screen.getByText('Milestones')).toBeInTheDocument();
+      });
+      const checkIcons = screen.getAllByTestId('CheckCircleIcon');
+      expect(checkIcons.length).toBeGreaterThan(0);
+    });
+  });
 });

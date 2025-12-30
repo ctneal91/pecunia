@@ -63,6 +63,45 @@ RSpec.describe 'Api::V1::Contributions', type: :request do
         json = JSON.parse(response.body)
         expect(json['goal']['current_amount'].to_f).to eq(800)
       end
+
+      context 'milestone tracking' do
+        let!(:milestone_goal) { create(:goal, user: user, target_amount: 1000, current_amount: 0) }
+
+        it 'returns new_milestones when milestone is reached' do
+          post "/api/v1/goals/#{milestone_goal.id}/contributions", params: { amount: 250, contributed_at: Time.current.iso8601 }
+          json = JSON.parse(response.body)
+          expect(json['new_milestones']).to eq([ 25 ])
+        end
+
+        it 'returns multiple milestones when multiple are reached' do
+          post "/api/v1/goals/#{milestone_goal.id}/contributions", params: { amount: 500, contributed_at: Time.current.iso8601 }
+          json = JSON.parse(response.body)
+          expect(json['new_milestones']).to contain_exactly(25, 50)
+        end
+
+        it 'returns empty array when no new milestones' do
+          post "/api/v1/goals/#{milestone_goal.id}/contributions", params: { amount: 100, contributed_at: Time.current.iso8601 }
+          json = JSON.parse(response.body)
+          expect(json['new_milestones']).to eq([])
+        end
+
+        it 'does not duplicate milestones on subsequent contributions' do
+          post "/api/v1/goals/#{milestone_goal.id}/contributions", params: { amount: 250, contributed_at: Time.current.iso8601 }
+          first_json = JSON.parse(response.body)
+          expect(first_json['new_milestones']).to eq([ 25 ])
+
+          post "/api/v1/goals/#{milestone_goal.id}/contributions", params: { amount: 50, contributed_at: Time.current.iso8601 }
+          second_json = JSON.parse(response.body)
+          expect(second_json['new_milestones']).to eq([])
+        end
+
+        it 'includes milestones in goal response' do
+          post "/api/v1/goals/#{milestone_goal.id}/contributions", params: { amount: 500, contributed_at: Time.current.iso8601 }
+          json = JSON.parse(response.body)
+          expect(json['goal']['milestones'].size).to eq(2)
+          expect(json['goal']['milestones'].map { |m| m['percentage'] }).to contain_exactly(25, 50)
+        end
+      end
     end
   end
 
