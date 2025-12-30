@@ -31,6 +31,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import MilestoneCelebration from '../../components/MilestoneCelebration';
 import MilestoneProgress from '../../components/MilestoneProgress';
 import ProgressChart from '../../components/ProgressChart';
+import SavingsProjection from '../../components/SavingsProjection';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -370,6 +371,20 @@ export default function GoalDetail() {
               milestones={goal.milestones}
               targetAmount={goal.target_amount}
               currentAmount={goal.current_amount}
+            />
+          </Paper>
+        )}
+
+        {user && (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Savings Projection
+            </Typography>
+            <SavingsProjection
+              contributions={contributions}
+              targetAmount={goal.target_amount}
+              currentAmount={goal.current_amount}
+              targetDate={goal.target_date}
             />
           </Paper>
         )}
