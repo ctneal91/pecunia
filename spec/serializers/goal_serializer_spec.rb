@@ -98,5 +98,78 @@ RSpec.describe GoalSerializer do
         expect(subject[:completed]).to be true
       end
     end
+
+    context "when goal has no group" do
+      let(:goal) { create(:goal, user: user, group: nil, target_amount: 100, current_amount: 50) }
+
+      it "does not include contributors" do
+        expect(subject).not_to have_key(:contributors)
+        expect(subject).not_to have_key(:contributor_count)
+      end
+    end
+
+    context "when goal belongs to a group with contributions" do
+      let(:user2) { create(:user, name: "Jane Doe", email: "jane@example.com") }
+      let(:user3) { create(:user, name: nil, email: "bob@example.com") }
+      let(:group_goal) { create(:goal, group: group, user: nil, target_amount: 1000, current_amount: 0) }
+
+      before do
+        create(:contribution, goal: group_goal, user: user, amount: 300, contributed_at: 3.days.ago)
+        create(:contribution, goal: group_goal, user: user, amount: 200, contributed_at: 2.days.ago)
+        create(:contribution, goal: group_goal, user: user2, amount: 400, contributed_at: 1.day.ago)
+        create(:contribution, goal: group_goal, user: user3, amount: 100, contributed_at: Time.current)
+      end
+
+      subject { described_class.new(group_goal.reload).as_json }
+
+      it "includes contributors array" do
+        expect(subject[:contributors]).to be_an(Array)
+        expect(subject[:contributors].size).to eq(3)
+      end
+
+      it "includes contributor_count" do
+        expect(subject[:contributor_count]).to eq(3)
+      end
+
+      it "sorts contributors by total amount descending" do
+        expect(subject[:contributors].first[:user_name]).to eq(user.name)
+        expect(subject[:contributors].first[:total_amount]).to eq(500.0)
+      end
+
+      it "includes contributor details" do
+        user_contributor = subject[:contributors].find { |c| c[:user_id] == user.id }
+        expect(user_contributor[:user_name]).to eq(user.name)
+        expect(user_contributor[:total_amount]).to eq(500.0)
+        expect(user_contributor[:contribution_count]).to eq(2)
+        expect(user_contributor[:percentage]).to eq(50.0)
+      end
+
+      it "calculates correct percentages" do
+        jane_contributor = subject[:contributors].find { |c| c[:user_id] == user2.id }
+        expect(jane_contributor[:percentage]).to eq(40.0)
+
+        bob_contributor = subject[:contributors].find { |c| c[:user_id] == user3.id }
+        expect(bob_contributor[:percentage]).to eq(10.0)
+      end
+
+      it "uses email when user has no name" do
+        bob_contributor = subject[:contributors].find { |c| c[:user_id] == user3.id }
+        expect(bob_contributor[:user_name]).to eq("bob@example.com")
+      end
+    end
+
+    context "when group goal has no contributions" do
+      let(:empty_group_goal) { create(:goal, group: group, user: nil, target_amount: 1000, current_amount: 0) }
+
+      subject { described_class.new(empty_group_goal).as_json }
+
+      it "returns empty contributors array" do
+        expect(subject[:contributors]).to eq([])
+      end
+
+      it "returns zero contributor_count" do
+        expect(subject[:contributor_count]).to eq(0)
+      end
+    end
   end
 end

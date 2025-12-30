@@ -52,6 +52,20 @@ const mockContribution: Contribution = {
   created_at: '2025-01-15T00:00:00Z',
 };
 
+const mockGroupGoal: Goal = {
+  ...mockGoal,
+  id: 2,
+  title: 'Family Vacation',
+  group_id: 1,
+  group_name: 'Smith Family',
+  current_amount: 500,
+  contributors: [
+    { user_id: 1, user_name: 'John Smith', total_amount: 300, contribution_count: 3, percentage: 60 },
+    { user_id: 2, user_name: 'Jane Smith', total_amount: 200, contribution_count: 2, percentage: 40 },
+  ],
+  contributor_count: 2,
+};
+
 const renderGoalDetail = (id: string = '1') => {
   return render(
     <MemoryRouter initialEntries={[`/goals/${id}`]}>
@@ -91,6 +105,7 @@ describe('GoalDetail', () => {
         data: { user: { id: 1, email: 'test@example.com', name: 'Test', avatar_url: null } }
       });
       mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal] } });
+      mockedApi.getGoal.mockResolvedValue({ data: { goal: mockGoal } });
     });
 
     it('shows goal title and description', async () => {
@@ -113,6 +128,7 @@ describe('GoalDetail', () => {
 
     it('shows goal reached for completed goals', async () => {
       mockedApi.getGoals.mockResolvedValue({ data: { goals: [completedGoal] } });
+      mockedApi.getGoal.mockResolvedValue({ data: { goal: completedGoal } });
       renderGoalDetail();
 
       await waitFor(() => {
@@ -186,6 +202,90 @@ describe('GoalDetail', () => {
       await waitFor(() => {
         expect(screen.getByText(/sign up to track your contribution history/i)).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('group goal with contributors', () => {
+    beforeEach(() => {
+      mockedApi.getMe.mockResolvedValue({
+        data: { user: { id: 1, email: 'test@example.com', name: 'Test', avatar_url: null } }
+      });
+      mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGroupGoal] } });
+      mockedApi.getGoal.mockResolvedValue({ data: { goal: mockGroupGoal } });
+      mockedApi.getContributions.mockResolvedValue({ data: { contributions: [] } });
+    });
+
+    it('shows shared goal indicator', async () => {
+      renderGoalDetail('2');
+
+      await waitFor(() => {
+        expect(screen.getByText(/shared goal in smith family/i)).toBeInTheDocument();
+      });
+    });
+
+    it('shows contributors section with count', async () => {
+      renderGoalDetail('2');
+
+      await waitFor(() => {
+        expect(screen.getByText('Contributors (2)')).toBeInTheDocument();
+      });
+    });
+
+    it('displays contributor names', async () => {
+      renderGoalDetail('2');
+
+      await waitFor(() => {
+        expect(screen.getByText('John Smith')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    });
+
+    it('shows contributor amounts and percentages', async () => {
+      renderGoalDetail('2');
+
+      await waitFor(() => {
+        expect(screen.getByText('$300')).toBeInTheDocument();
+      });
+      expect(screen.getByText('60%')).toBeInTheDocument();
+      expect(screen.getByText('$200')).toBeInTheDocument();
+      expect(screen.getByText('40%')).toBeInTheDocument();
+    });
+
+    it('shows contribution counts', async () => {
+      renderGoalDetail('2');
+
+      await waitFor(() => {
+        expect(screen.getByText('3 contributions')).toBeInTheDocument();
+      });
+      expect(screen.getByText('2 contributions')).toBeInTheDocument();
+    });
+  });
+
+  describe('personal goal without contributors', () => {
+    beforeEach(() => {
+      mockedApi.getMe.mockResolvedValue({
+        data: { user: { id: 1, email: 'test@example.com', name: 'Test', avatar_url: null } }
+      });
+      mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal] } });
+      mockedApi.getGoal.mockResolvedValue({ data: { goal: mockGoal } });
+    });
+
+    it('does not show contributors section for personal goals', async () => {
+      renderGoalDetail();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vacation Fund')).toBeInTheDocument();
+      });
+      expect(screen.queryByText(/contributors/i)).not.toBeInTheDocument();
+    });
+
+    it('does not show shared goal indicator for personal goals', async () => {
+      renderGoalDetail();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vacation Fund')).toBeInTheDocument();
+      });
+      expect(screen.queryByText(/shared goal in/i)).not.toBeInTheDocument();
     });
   });
 });

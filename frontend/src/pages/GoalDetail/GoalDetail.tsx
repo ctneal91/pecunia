@@ -25,7 +25,9 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
-import { Goal, Contribution, ContributionInput, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
+import { Goal, Contribution, ContributionInput, Contributor, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
+import GroupIcon from '@mui/icons-material/Group';
+import PersonIcon from '@mui/icons-material/Person';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -64,19 +66,29 @@ export default function GoalDetail() {
     if (!id) return;
 
     const foundGoal = goals.find((g) => String(g.id) === id);
-    if (foundGoal) {
-      setGoal(foundGoal);
-    }
 
     if (user && foundGoal && typeof foundGoal.id === 'number') {
+      // Fetch full goal data including contributors for logged-in users
+      api.getGoal(foundGoal.id).then((response) => {
+        if (response.data) {
+          setGoal(response.data.goal);
+        } else if (foundGoal) {
+          setGoal(foundGoal);
+        }
+        setLoading(false);
+      });
+
       api.getContributions(foundGoal.id).then((response) => {
         if (response.data) {
           setContributions(response.data.contributions);
         }
       });
+    } else if (foundGoal) {
+      setGoal(foundGoal);
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, [id, goals, user]);
 
   const handleAddContribution = async (e: React.FormEvent) => {
@@ -228,7 +240,51 @@ export default function GoalDetail() {
               Target date: {formatDate(goal.target_date)}
             </Typography>
           )}
+
+          {goal.group_id && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+              <GroupIcon fontSize="small" color="action" />
+              <Typography variant="body2" color="text.secondary">
+                Shared goal in {goal.group_name}
+              </Typography>
+            </Box>
+          )}
         </Paper>
+
+        {goal.group_id && goal.contributors && goal.contributors.length > 0 && (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <GroupIcon color="primary" />
+              <Typography variant="h6">
+                Contributors ({goal.contributor_count})
+              </Typography>
+            </Box>
+            <List disablePadding>
+              {goal.contributors.map((contributor: Contributor, index: number) => (
+                <Box key={contributor.user_id}>
+                  {index > 0 && <Divider />}
+                  <ListItem sx={{ px: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mr: 2 }}>
+                      <PersonIcon color="action" />
+                    </Box>
+                    <ListItemText
+                      primary={contributor.user_name}
+                      secondary={`${contributor.contribution_count} contribution${contributor.contribution_count !== 1 ? 's' : ''}`}
+                    />
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="body1" fontWeight="bold" color="success.main">
+                        {formatCurrency(contributor.total_amount)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {contributor.percentage}%
+                      </Typography>
+                    </Box>
+                  </ListItem>
+                </Box>
+              ))}
+            </List>
+          </Paper>
+        )}
 
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>

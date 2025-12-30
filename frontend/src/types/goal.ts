@@ -7,6 +7,14 @@ export type GoalType =
   | 'home'
   | 'other';
 
+export interface Contributor {
+  user_id: number;
+  user_name: string;
+  total_amount: number;
+  contribution_count: number;
+  percentage: number;
+}
+
 export interface Goal {
   id: number | string;
   title: string;
@@ -24,6 +32,8 @@ export interface Goal {
   group_name: string | null;
   created_at: string;
   updated_at: string;
+  contributors?: Contributor[];
+  contributor_count?: number;
 }
 
 export interface GoalInput {
