@@ -80,6 +80,15 @@ describe('export utilities', () => {
       expect(mockClick).toHaveBeenCalled();
     });
 
+    it('does not download when no data returned', async () => {
+      mockedApi.exportGoals.mockResolvedValue({} as never);
+
+      await exportGoals('json');
+
+      expect(mockedApi.exportGoals).toHaveBeenCalledWith('json');
+      expect(mockClick).not.toHaveBeenCalled();
+    });
+
     it('exports goals as CSV', async () => {
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
@@ -94,6 +103,15 @@ describe('export utilities', () => {
       );
       expect(mockClick).toHaveBeenCalled();
     });
+
+    it('throws error when CSV export fails', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 500,
+      });
+
+      await expect(exportGoals('csv')).rejects.toThrow('Failed to export');
+    });
   });
 
   describe('exportContributions', () => {
@@ -105,6 +123,41 @@ describe('export utilities', () => {
       await exportContributions('json');
 
       expect(mockedApi.exportContributions).toHaveBeenCalledWith('json', undefined);
+      expect(mockClick).toHaveBeenCalled();
+    });
+
+    it('exports contributions for a specific goal as JSON', async () => {
+      mockedApi.exportContributions.mockResolvedValue({
+        data: { data: [{ id: 1, amount: 100 }] },
+      } as never);
+
+      await exportContributions('json', 456);
+
+      expect(mockedApi.exportContributions).toHaveBeenCalledWith('json', 456);
+      expect(mockClick).toHaveBeenCalled();
+    });
+
+    it('does not download when no data returned', async () => {
+      mockedApi.exportContributions.mockResolvedValue({} as never);
+
+      await exportContributions('json');
+
+      expect(mockClick).not.toHaveBeenCalled();
+    });
+
+    it('exports contributions as CSV without goal_id', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve('id,amount\n1,100'),
+      });
+
+      await exportContributions('csv');
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/v1/exports/contributions?format=csv',
+        expect.any(Object)
+      );
+      expect(mockClick).toHaveBeenCalled();
     });
 
     it('exports contributions for a specific goal as CSV', async () => {
@@ -119,6 +172,7 @@ describe('export utilities', () => {
         expect.stringContaining('goal_id=123'),
         expect.any(Object)
       );
+      expect(mockClick).toHaveBeenCalled();
     });
   });
 
@@ -133,6 +187,15 @@ describe('export utilities', () => {
       expect(mockedApi.exportSummary).toHaveBeenCalled();
       expect(mockClick).toHaveBeenCalled();
     });
+
+    it('does not download when no data returned', async () => {
+      mockedApi.exportSummary.mockResolvedValue({} as never);
+
+      await exportSummaryReport();
+
+      expect(mockedApi.exportSummary).toHaveBeenCalled();
+      expect(mockClick).not.toHaveBeenCalled();
+    });
   });
 
   describe('exportGoalReport', () => {
@@ -145,6 +208,15 @@ describe('export utilities', () => {
 
       expect(mockedApi.exportGoalReport).toHaveBeenCalledWith(1);
       expect(mockClick).toHaveBeenCalled();
+    });
+
+    it('does not download when no data returned', async () => {
+      mockedApi.exportGoalReport.mockResolvedValue({} as never);
+
+      await exportGoalReport(1, 'Test Goal');
+
+      expect(mockedApi.exportGoalReport).toHaveBeenCalledWith(1);
+      expect(mockClick).not.toHaveBeenCalled();
     });
   });
 });
