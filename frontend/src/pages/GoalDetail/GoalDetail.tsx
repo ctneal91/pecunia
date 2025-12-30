@@ -30,6 +30,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import MilestoneCelebration from '../../components/MilestoneCelebration';
 import MilestoneProgress from '../../components/MilestoneProgress';
+import ProgressChart from '../../components/ProgressChart';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -358,6 +359,20 @@ export default function GoalDetail() {
             </Box>
           </Box>
         </Paper>
+
+        {user && contributions.length > 0 && (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Progress Over Time
+            </Typography>
+            <ProgressChart
+              contributions={contributions}
+              milestones={goal.milestones}
+              targetAmount={goal.target_amount}
+              currentAmount={goal.current_amount}
+            />
+          </Paper>
+        )}
 
         {user && contributions.length > 0 && (
           <Paper sx={{ p: 3 }}>
