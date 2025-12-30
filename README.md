@@ -167,6 +167,49 @@ cd frontend && npm test
 
 # Type checking
 cd frontend && npm run typecheck
+
+# Run with coverage
+bundle exec rspec                    # RSpec (95% minimum)
+cd frontend && npm run test:coverage # Jest (80% lines, 70% branches)
+```
+
+## Pre-commit Hooks
+
+The project enforces code quality through Git pre-commit hooks. All checks must pass before commits are accepted.
+
+### Setup
+
+```bash
+cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+### Checks Performed
+
+| Check | Tool | Threshold |
+|-------|------|-----------|
+| Ruby linting | RuboCop | No offenses |
+| Ruby tests | RSpec | 95% coverage |
+| JS/TS linting | ESLint | No errors |
+| Type checking | TypeScript | No errors |
+| JS/TS tests | Jest | 80% lines, 70% branches |
+
+### Running Checks Manually
+
+```bash
+# RuboCop
+bundle exec rubocop --parallel
+
+# RSpec with coverage
+bundle exec rspec
+
+# ESLint
+cd frontend && npm run lint
+
+# TypeScript
+cd frontend && npm run typecheck
+
+# Jest with coverage
+cd frontend && npm run test:coverage
 ```
 
 ## Split from
