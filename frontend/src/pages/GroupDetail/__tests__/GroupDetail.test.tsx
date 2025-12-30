@@ -16,10 +16,12 @@ const mockGroup = {
   goal_count: 5,
   is_admin: true,
   invite_code: 'ABC123',
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
   members: [
-    { id: 1, user_id: 1, user_name: 'Test User', user_email: 'test@example.com', role: 'admin' },
-    { id: 2, user_id: 2, user_name: 'Jane Doe', user_email: 'jane@example.com', role: 'member' },
-    { id: 3, user_id: 3, user_name: 'Bob Smith', user_email: 'bob@example.com', role: 'member' },
+    { id: 1, user_id: 1, user_name: 'Test User', user_email: 'test@example.com', role: 'admin' as const, joined_at: '2024-01-01T00:00:00Z' },
+    { id: 2, user_id: 2, user_name: 'Jane Doe', user_email: 'jane@example.com', role: 'member' as const, joined_at: '2024-01-02T00:00:00Z' },
+    { id: 3, user_id: 3, user_name: 'Bob Smith', user_email: 'bob@example.com', role: 'member' as const, joined_at: '2024-01-03T00:00:00Z' },
   ],
 };
 
@@ -29,8 +31,8 @@ const mockGroupAsMember = {
 };
 
 const mockInvites = [
-  { id: 1, email: 'pending@example.com', status: 'pending', invited_at: '2024-01-15', expired: false },
-  { id: 2, email: 'expired@example.com', status: 'pending', invited_at: '2024-01-01', expired: true },
+  { id: 1, email: 'pending@example.com', status: 'pending' as const, invited_at: '2024-01-15', expired: false, accepted_at: null },
+  { id: 2, email: 'expired@example.com', status: 'pending' as const, invited_at: '2024-01-01', expired: true, accepted_at: null },
 ];
 
 const renderGroupDetail = (groupId: string = '1') => {
@@ -233,7 +235,7 @@ describe('GroupDetail', () => {
       });
 
       it('deletes group and navigates away', async () => {
-        mockedApi.deleteGroup.mockResolvedValue({ data: {} });
+        mockedApi.deleteGroup.mockResolvedValue({ data: undefined });
 
         renderGroupDetail();
 
@@ -263,7 +265,7 @@ describe('GroupDetail', () => {
     describe('regenerate invite code', () => {
       it('regenerates invite code', async () => {
         mockedApi.regenerateInviteCode.mockResolvedValue({
-          data: { group: { invite_code: 'NEW123' } }
+          data: { group: { ...mockGroup, invite_code: 'NEW123' } }
         });
 
         renderGroupDetail();
@@ -307,7 +309,7 @@ describe('GroupDetail', () => {
       });
 
       it('toggles admin status', async () => {
-        mockedApi.updateMembership.mockResolvedValue({ data: {} });
+        mockedApi.updateMembership.mockResolvedValue({ data: { membership: mockGroup.members[1] } });
 
         renderGroupDetail();
 
@@ -334,7 +336,7 @@ describe('GroupDetail', () => {
       });
 
       it('removes member from group', async () => {
-        mockedApi.removeMember.mockResolvedValue({ data: {} });
+        mockedApi.removeMember.mockResolvedValue({ data: undefined });
 
         renderGroupDetail();
 
@@ -378,7 +380,7 @@ describe('GroupDetail', () => {
 
       it('sends email invite successfully', async () => {
         mockedApi.sendInvite.mockResolvedValue({
-          data: { invite: { id: 3, email: 'new@example.com' } }
+          data: { invite: { id: 3, email: 'new@example.com', status: 'pending' as const, expired: false, invited_at: '2024-01-15', accepted_at: null } }
         });
 
         renderGroupDetail();
@@ -404,7 +406,7 @@ describe('GroupDetail', () => {
       });
 
       it('resends invite', async () => {
-        mockedApi.resendInvite.mockResolvedValue({ data: {} });
+        mockedApi.resendInvite.mockResolvedValue({ data: { invite: mockInvites[0], message: 'Invite resent' } });
 
         renderGroupDetail();
 
@@ -463,7 +465,7 @@ describe('GroupDetail', () => {
     });
 
     it('leaves group and navigates away', async () => {
-      mockedApi.leaveGroup.mockResolvedValue({ data: {} });
+      mockedApi.leaveGroup.mockResolvedValue({ data: undefined });
 
       renderGroupDetail();
 

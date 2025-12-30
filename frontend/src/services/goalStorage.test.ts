@@ -21,7 +21,7 @@ describe('goalStorage', () => {
     });
 
     it('returns stored goals', () => {
-      const goal = goalStorage.create(mockInput);
+      goalStorage.create(mockInput);
       const goals = goalStorage.getAll();
       expect(goals).toHaveLength(1);
       expect(goals[0].title).toBe('Test Goal');

@@ -16,8 +16,8 @@ RSpec.describe GroupInviteMailer, type: :mailer do
 
     it "renders the headers" do
       expect(mail.subject).to eq("John Doe invited you to join Family Budget on Pecunia")
-      expect(mail.to).to eq(["friend@example.com"])
-      expect(mail.from).to eq(["from@example.com"])
+      expect(mail.to).to eq([ "friend@example.com" ])
+      expect(mail.from).to eq([ "from@example.com" ])
     end
 
     it "renders the body with invite details" do

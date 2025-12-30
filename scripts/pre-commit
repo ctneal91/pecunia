@@ -1,14 +1,54 @@
 #!/bin/bash
 
-# Pre-commit hook to enforce RSpec coverage requirements
+# Pre-commit hook to enforce code quality and test coverage
 # Install with: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 set -e
 
-echo "Running RSpec tests with coverage check..."
+# Ensure npm is available (nvm setup)
+if [ -d "$HOME/.nvm/versions/node" ]; then
+  NODE_PATH=$(find "$HOME/.nvm/versions/node" -maxdepth 1 -type d | sort -V | tail -1)
+  export PATH="$NODE_PATH/bin:$PATH"
+fi
 
-# Run RSpec - SimpleCov will enforce 95% minimum coverage
+echo "========================================"
+echo "Running pre-commit checks..."
+echo "========================================"
+
+# RuboCop - Ruby linting
+echo ""
+echo "[1/5] Running RuboCop..."
+bundle exec rubocop --parallel
+echo "✓ RuboCop passed"
+
+# RSpec - Ruby tests with coverage
+echo ""
+echo "[2/5] Running RSpec tests with coverage check..."
 bundle exec rspec --format progress
+echo "✓ RSpec passed (coverage >= 95%)"
 
-# If we get here, tests passed and coverage is >= 95%
-echo "✓ All tests passed with sufficient coverage"
+# ESLint - JavaScript/TypeScript linting
+echo ""
+echo "[3/5] Running ESLint..."
+cd frontend
+npm run lint
+echo "✓ ESLint passed"
+
+# TypeScript type check
+echo ""
+echo "[4/5] Running TypeScript type check..."
+npm run typecheck
+echo "✓ TypeScript passed"
+
+# Jest - JavaScript/TypeScript tests with coverage
+echo ""
+echo "[5/5] Running Jest tests with coverage check..."
+npm run test:coverage
+echo "✓ Jest passed (coverage thresholds met)"
+
+cd ..
+
+echo ""
+echo "========================================"
+echo "✓ All pre-commit checks passed!"
+echo "========================================"

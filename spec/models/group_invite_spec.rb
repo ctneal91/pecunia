@@ -115,7 +115,7 @@ RSpec.describe GroupInvite, type: :model do
       pending_invite = create(:group_invite, status: "pending")
       create(:group_invite, status: "accepted")
 
-      expect(GroupInvite.pending).to eq([pending_invite])
+      expect(GroupInvite.pending).to eq([ pending_invite ])
     end
   end
 end

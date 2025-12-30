@@ -17,7 +17,7 @@ class Goal < ApplicationRecord
   end
 
   def remaining_amount
-    [target_amount - current_amount, 0].max
+    [ target_amount - current_amount, 0 ].max
   end
 
   def completed?

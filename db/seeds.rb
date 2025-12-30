@@ -88,7 +88,7 @@ if user.goals.empty?
     { goal: debt, amount: 400, note: nil, days_ago: 25 },
     { goal: debt, amount: 600, note: "Extra payment", days_ago: 15 },
     { goal: debt, amount: 450, note: nil, days_ago: 7 },
-    { goal: debt, amount: 500, note: nil, days_ago: 1 },
+    { goal: debt, amount: 500, note: nil, days_ago: 1 }
   ]
 
   contributions.each do |c|

@@ -190,7 +190,7 @@ describe('Goals', () => {
 
     it('confirms before deleting goal', async () => {
       mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal] } });
-      mockedApi.deleteGoal.mockResolvedValue({ data: { success: true } });
+      mockedApi.deleteGoal.mockResolvedValue({ data: undefined });
       window.confirm = jest.fn(() => false);
       renderGoals();
 
@@ -204,7 +204,7 @@ describe('Goals', () => {
 
     it('deletes goal when confirmed', async () => {
       mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal] } });
-      mockedApi.deleteGoal.mockResolvedValue({ data: { success: true } });
+      mockedApi.deleteGoal.mockResolvedValue({ data: undefined });
       window.confirm = jest.fn(() => true);
       renderGoals();
 
