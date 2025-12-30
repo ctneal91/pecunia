@@ -11,22 +11,24 @@ Pecunia goes beyond traditional couples-focused financial apps to support divers
 ### Core Goal Tracking
 | Feature | Status |
 |---------|--------|
-| Multiple goal types (emergency fund, down payment, debt payoff, retirement) | Planned |
-| Progress visualization with React charts (Recharts/Victory) | Planned |
-| Custom contribution schedules (weekly, biweekly, monthly, irregular) | Planned |
-| Projection calculator with completion date estimates | Planned |
-| Milestone celebrations at 25%/50%/75%/100% | Planned |
+| Multiple goal types (savings, vacation, emergency fund, debt payoff, retirement, home, education, vehicle, other) | ✅ Complete |
+| Progress visualization with React charts (Recharts) | ✅ Complete |
+| Recurring contribution schedules (daily, weekly, biweekly, monthly) | ✅ Complete |
+| Savings projection calculator with completion date estimates | ✅ Complete |
+| Milestone celebrations at 25%/50%/75%/100% | ✅ Complete |
+| Goals by category dashboard | ✅ Complete |
+| Export goals and contributions (CSV/JSON) | ✅ Complete |
+| Summary and individual goal reports | ✅ Complete |
 
 ### Household/Shared Goals
 | Feature | Status |
 |---------|--------|
-| Flexible households ("Smith Family", "Oak Street Roommates", etc.) | Planned |
-| Membership roles (admin, contributor, viewer) | Planned |
-| Individual vs. collective contribution tracking | Planned |
-| Flexible splits (equal, proportional, custom percentages) | Planned |
-| Real-time activity feed | Planned |
-| Multiple household memberships per user | Planned |
-| Privacy controls for goal visibility | Planned |
+| Flexible groups ("Smith Family", "Oak Street Roommates", etc.) | ✅ Complete |
+| Membership roles (admin, member) | ✅ Complete |
+| Individual contribution tracking per member | ✅ Complete |
+| Email invitations to join groups | ✅ Complete |
+| Multiple group memberships per user | ✅ Complete |
+| Contributor leaderboard for group goals | ✅ Complete |
 
 ### API Integrations
 | Integration | Purpose | Status |
@@ -170,7 +172,7 @@ cd frontend && npm run typecheck
 
 # Run with coverage
 bundle exec rspec                    # RSpec (95% minimum)
-cd frontend && npm run test:coverage # Jest (80% lines, 70% branches)
+cd frontend && npm run test:coverage # Jest (82% lines/statements, 75% branches/functions)
 ```
 
 ## Pre-commit Hooks
@@ -191,7 +193,7 @@ cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 | Ruby tests | RSpec | 95% coverage |
 | JS/TS linting | ESLint | No errors |
 | Type checking | TypeScript | No errors |
-| JS/TS tests | Jest | 80% lines, 70% branches |
+| JS/TS tests | Jest | 82% lines/statements, 75% branches/functions |
 
 ### Running Checks Manually
 
