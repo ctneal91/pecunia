@@ -1,22 +1,13 @@
 import { useState } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Chip,
-  Button,
-  Collapse,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  useTheme,
-} from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { Box, Paper, Collapse, useTheme } from '@mui/material';
 import { goalTemplates, GoalTemplate, TemplateCategory } from '../../data/goalTemplates';
-import { formatCurrency } from '../../utils/formatters';
+import {
+  TemplateChips,
+  TipsSection,
+  CategoryHeader,
+  IntroText,
+  TemplateCardHeader,
+} from './components';
 
 interface GoalTemplatesProps {
   onSelectTemplate: (template: GoalTemplate) => void;
@@ -33,7 +24,6 @@ function TemplateCard({
   onSelect: () => void;
 }) {
   const theme = useTheme();
-  const [showTips, setShowTips] = useState(false);
 
   return (
     <Paper
@@ -50,65 +40,18 @@ function TemplateCard({
       }}
       onClick={onSelect}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-        <Typography variant="subtitle1" fontWeight="medium">
-          {template.name}
-        </Typography>
-        {isSelected && (
-          <CheckCircleOutlineIcon color="primary" fontSize="small" />
-        )}
-      </Box>
+      <TemplateCardHeader
+        name={template.name}
+        description={template.description}
+        isSelected={isSelected}
+      />
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {template.description}
-      </Typography>
+      <TemplateChips
+        suggestedAmount={template.suggestedAmount}
+        suggestedMonths={template.suggestedMonths}
+      />
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-        <Chip
-          label={formatCurrency(template.suggestedAmount)}
-          size="small"
-          color="primary"
-          variant="outlined"
-        />
-        {template.suggestedMonths && (
-          <Chip
-            label={`${template.suggestedMonths} months`}
-            size="small"
-            variant="outlined"
-          />
-        )}
-      </Box>
-
-      {template.tips.length > 0 && (
-        <Box sx={{ mt: 1 }}>
-          <Button
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowTips(!showTips);
-            }}
-            endIcon={showTips ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            sx={{ textTransform: 'none', p: 0 }}
-          >
-            {showTips ? 'Hide tips' : 'Show tips'}
-          </Button>
-          <Collapse in={showTips}>
-            <List dense sx={{ mt: 1 }}>
-              {template.tips.map((tip, index) => (
-                <ListItem key={index} sx={{ py: 0, px: 0 }}>
-                  <ListItemIcon sx={{ minWidth: 28 }}>
-                    <CheckCircleOutlineIcon fontSize="small" color="success" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={tip}
-                    primaryTypographyProps={{ variant: 'body2' }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Collapse>
-        </Box>
-      )}
+      <TipsSection tips={template.tips} />
     </Paper>
   );
 }
@@ -128,36 +71,13 @@ function CategorySection({
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Button
-        fullWidth
-        onClick={() => setIsExpanded(!isExpanded)}
-        sx={{
-          justifyContent: 'space-between',
-          textTransform: 'none',
-          py: 1.5,
-          px: 2,
-          bgcolor: 'action.hover',
-          borderRadius: 1,
-          '&:hover': {
-            bgcolor: 'action.selected',
-          },
-        }}
-        endIcon={isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="h6" component="span">
-            {category.icon}
-          </Typography>
-          <Typography variant="subtitle1" fontWeight="medium">
-            {category.name}
-          </Typography>
-          <Chip
-            label={category.templates.length}
-            size="small"
-            sx={{ ml: 1 }}
-          />
-        </Box>
-      </Button>
+      <CategoryHeader
+        icon={category.icon}
+        name={category.name}
+        templateCount={category.templates.length}
+        isExpanded={isExpanded}
+        onToggle={() => setIsExpanded(!isExpanded)}
+      />
 
       <Collapse in={isExpanded}>
         <Box
@@ -188,9 +108,7 @@ export default function GoalTemplates({
 }: GoalTemplatesProps) {
   return (
     <Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Choose a template to get started quickly, or skip to create a custom goal.
-      </Typography>
+      <IntroText />
 
       {goalTemplates.map((category) => (
         <CategorySection
