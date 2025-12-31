@@ -2,6 +2,8 @@
 
 A financial goal tracking application that helps individuals and households collaboratively save toward shared financial goals. Built with Rails 8 API and React 19.
 
+You can find it deployed on Heroku at https://pecunia-bda916873265.herokuapp.com/
+
 ## Vision
 
 Pecunia goes beyond traditional couples-focused financial apps to support diverse household configurations: roommates splitting expenses, multi-generational households, friend groups pooling resources, and more.
