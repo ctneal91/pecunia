@@ -1,26 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Container,
-  Typography,
-  Box,
-  Paper,
-  Grid,
-  Button,
-  Skeleton,
-  Alert,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Container, Box, Grid } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGoals } from '../../contexts/GoalsContext';
 import { api, DashboardStats, RecentContribution } from '../../services/api';
 import { Goal } from '../../types/goal';
+import { StatsGrid, EmptyState } from '../../components/Home';
 import {
-  StatsGrid,
-  GoalProgressItem,
-  EmptyState,
-  RecentActivityList,
-} from '../../components/Home';
+  PageHeader,
+  LoadingState,
+  ErrorState,
+  GoalsProgressSection,
+  RecentActivitySection,
+  GuestInfoAlert,
+  GuestGoalsSection,
+} from './components';
 
 function GuestDashboard() {
   const navigate = useNavigate();
@@ -32,9 +26,7 @@ function GuestDashboard() {
 
   return (
     <>
-      <Alert severity="info" sx={{ mb: 3 }}>
-        Your data is saved locally. Sign up to sync across devices and track contribution history.
-      </Alert>
+      <GuestInfoAlert />
 
       <StatsGrid
         totalSaved={totalSaved}
@@ -46,21 +38,11 @@ function GuestDashboard() {
       {goals.length === 0 ? (
         <EmptyState onCreateGoal={() => navigate('/goals/new')} />
       ) : (
-        <Paper sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">Your Goals</Typography>
-            <Button size="small" onClick={() => navigate('/goals')}>
-              View All
-            </Button>
-          </Box>
-          {goals.slice(0, 3).map((goal) => (
-            <GoalProgressItem
-              key={goal.id}
-              goal={goal}
-              onClick={() => navigate(`/goals/${goal.id}`)}
-            />
-          ))}
-        </Paper>
+        <GuestGoalsSection
+          goals={goals}
+          onViewAll={() => navigate('/goals')}
+          onGoalClick={(id) => navigate(`/goals/${id}`)}
+        />
       )}
     </>
   );
@@ -90,22 +72,11 @@ function AuthenticatedDashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <>
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {[1, 2, 3, 4].map((i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
-              <Skeleton variant="rectangular" height={100} />
-            </Grid>
-          ))}
-        </Grid>
-        <Skeleton variant="rectangular" height={200} />
-      </>
-    );
+    return <LoadingState />;
   }
 
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return <ErrorState error={error} />;
   }
 
   if (!stats) return null;
@@ -121,42 +92,16 @@ function AuthenticatedDashboard() {
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 7 }}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Goals Progress</Typography>
-              <Button size="small" onClick={() => navigate('/goals')}>
-                View All
-              </Button>
-            </Box>
-            {goalsSummary.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body1" color="text.secondary" gutterBottom>
-                  No goals yet
-                </Typography>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/goals/new')}>
-                  Create Goal
-                </Button>
-              </Box>
-            ) : (
-              goalsSummary.map((goal) => (
-                <GoalProgressItem
-                  key={goal.id}
-                  goal={goal}
-                  onClick={() => navigate(`/goals/${goal.id}`)}
-                  showAmounts
-                />
-              ))
-            )}
-          </Paper>
+          <GoalsProgressSection
+            goals={goalsSummary}
+            onViewAll={() => navigate('/goals')}
+            onGoalClick={(id) => navigate(`/goals/${id}`)}
+            onCreateGoal={() => navigate('/goals/new')}
+          />
         </Grid>
 
         <Grid size={{ xs: 12, md: 5 }}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Recent Activity
-            </Typography>
-            <RecentActivityList contributions={recentContributions} />
-          </Paper>
+          <RecentActivitySection contributions={recentContributions} />
         </Grid>
       </Grid>
     </>
@@ -169,9 +114,11 @@ export default function Home() {
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {user ? `Welcome back, ${user.name || user.email.split('@')[0]}!` : 'Welcome to Pecunia'}
-        </Typography>
+        <PageHeader
+          isAuthenticated={!!user}
+          userName={user?.name}
+          userEmail={user?.email}
+        />
 
         {user ? <AuthenticatedDashboard /> : <GuestDashboard />}
       </Box>
