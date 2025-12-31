@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "bin/build-frontend.sh",
+    "heroku-postbuild": "bin/build-frontend.sh",
     "lint:ruby": "bundle exec rubocop",
     "lint:frontend": "cd frontend && npm run lint",
     "typecheck": "cd frontend && npm run typecheck",
     "lint": "npm run lint:ruby && npm run lint:frontend && npm run typecheck",
     "prepare": "husky"
+  },
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
   },
   "devDependencies": {
     "husky": "^9.1.7",
