@@ -21,28 +21,31 @@ echo "[1/5] Running RuboCop..."
 bundle exec rubocop --parallel
 echo "✓ RuboCop passed"
 
-# RSpec - Ruby tests with coverage
-echo ""
-echo "[2/5] Running RSpec tests with coverage check..."
-bundle exec rspec --format progress
-echo "✓ RSpec passed (coverage >= 95%)"
-
 # ESLint - JavaScript/TypeScript linting
 echo ""
-echo "[3/5] Running ESLint..."
+echo "[2/5] Running ESLint..."
 cd frontend
 npm run lint
 echo "✓ ESLint passed"
 
 # TypeScript type check
 echo ""
-echo "[4/5] Running TypeScript type check..."
+echo "[3/5] Running TypeScript type check..."
 npm run typecheck
 echo "✓ TypeScript passed"
+
+cd ..
+
+# RSpec - Ruby tests with coverage
+echo ""
+echo "[4/5] Running RSpec tests with coverage check..."
+bundle exec rspec --format progress
+echo "✓ RSpec passed (coverage >= 95%)"
 
 # Jest - JavaScript/TypeScript tests with coverage
 echo ""
 echo "[5/5] Running Jest tests with coverage check..."
+cd frontend
 npm run test:coverage
 echo "✓ Jest passed (coverage thresholds met)"
 
