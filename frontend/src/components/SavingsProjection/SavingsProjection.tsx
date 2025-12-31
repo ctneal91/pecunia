@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
-import { Box, Typography, Paper, Divider, useTheme } from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import SavingsIcon from '@mui/icons-material/Savings';
-import WarningIcon from '@mui/icons-material/Warning';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Box, Divider } from '@mui/material';
 import { Contribution } from '../../types/goal';
-import { formatCurrency, formatDate } from '../../utils/formatters';
+import SavingsRateCards from './SavingsRateCards';
+import EstimatedCompletion from './EstimatedCompletion';
+import TargetDateAnalysis from './TargetDateAnalysis';
+import StatsSummary from './StatsSummary';
+import EmptyState from './EmptyState';
 
 interface SavingsProjectionProps {
   contributions: Contribution[];
@@ -148,8 +147,6 @@ export default function SavingsProjection({
   currentAmount,
   targetDate,
 }: SavingsProjectionProps) {
-  const theme = useTheme();
-
   const stats = useMemo(
     () => calculateProjectionStats(contributions, targetAmount, currentAmount, targetDate),
     [contributions, targetAmount, currentAmount, targetDate]
@@ -158,146 +155,38 @@ export default function SavingsProjection({
   const isGoalComplete = currentAmount >= targetAmount;
 
   if (contributions.length === 0) {
-    return (
-      <Box sx={{ textAlign: 'center', py: 3 }}>
-        <Typography variant="body2" color="text.secondary">
-          Add contributions to see savings projections and estimated completion date.
-        </Typography>
-      </Box>
-    );
+    return <EmptyState />;
   }
 
   return (
     <Box>
-      {/* Savings Rate Section */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <Paper
-          elevation={0}
-          sx={{
-            flex: 1,
-            minWidth: 140,
-            p: 2,
-            bgcolor: theme.palette.primary.main + '10',
-            borderRadius: 2,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <TrendingUpIcon fontSize="small" color="primary" />
-            <Typography variant="caption" color="text.secondary">
-              Monthly Rate
-            </Typography>
-          </Box>
-          <Typography variant="h6" color="primary.main">
-            {formatCurrency(stats.averageMonthlyRate)}
-          </Typography>
-        </Paper>
-
-        <Paper
-          elevation={0}
-          sx={{
-            flex: 1,
-            minWidth: 140,
-            p: 2,
-            bgcolor: theme.palette.info.main + '10',
-            borderRadius: 2,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <SavingsIcon fontSize="small" color="info" />
-            <Typography variant="caption" color="text.secondary">
-              Frequency
-            </Typography>
-          </Box>
-          <Typography variant="h6" color="info.main">
-            {stats.contributionFrequency}
-          </Typography>
-        </Paper>
-      </Box>
+      <SavingsRateCards
+        averageMonthlyRate={stats.averageMonthlyRate}
+        contributionFrequency={stats.contributionFrequency}
+      />
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Estimated Completion */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <CalendarTodayIcon fontSize="small" color="action" />
-          <Typography variant="subtitle2">
-            Estimated Completion
-          </Typography>
-        </Box>
+      <EstimatedCompletion
+        isGoalComplete={isGoalComplete}
+        estimatedCompletionDate={stats.estimatedCompletionDate}
+        daysToComplete={stats.daysToComplete}
+      />
 
-        {isGoalComplete ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CheckCircleIcon color="success" />
-            <Typography variant="body1" color="success.main" fontWeight="medium">
-              Goal Complete!
-            </Typography>
-          </Box>
-        ) : stats.estimatedCompletionDate ? (
-          <Box>
-            <Typography variant="h6">
-              {formatDate(stats.estimatedCompletionDate)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {stats.daysToComplete === 1
-                ? '1 day remaining'
-                : `${stats.daysToComplete} days remaining`}
-              {' '}at current rate
-            </Typography>
-          </Box>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            Unable to estimate - keep contributing!
-          </Typography>
-        )}
-      </Box>
-
-      {/* Target Date Analysis */}
       {targetDate && !isGoalComplete && (
-        <>
-          <Divider sx={{ my: 2 }} />
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              {stats.isOnTrack ? (
-                <CheckCircleIcon fontSize="small" color="success" />
-              ) : (
-                <WarningIcon fontSize="small" color="warning" />
-              )}
-              <Typography variant="subtitle2">
-                Target Date: {formatDate(new Date(targetDate))}
-              </Typography>
-            </Box>
-
-            {stats.isOnTrack ? (
-              <Typography variant="body2" color="success.main">
-                You're on track to reach your goal before the target date!
-              </Typography>
-            ) : (
-              <Box>
-                <Typography variant="body2" color="warning.main" sx={{ mb: 1 }}>
-                  To reach your goal by the target date, you need to save:
-                </Typography>
-                <Typography variant="h6" color="warning.main">
-                  {formatCurrency(stats.requiredMonthlyForTarget || 0)}/month
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  (Currently saving {formatCurrency(stats.averageMonthlyRate)}/month)
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        </>
+        <TargetDateAnalysis
+          targetDate={targetDate}
+          isOnTrack={stats.isOnTrack}
+          requiredMonthlyForTarget={stats.requiredMonthlyForTarget}
+          averageMonthlyRate={stats.averageMonthlyRate}
+        />
       )}
 
-      {/* Stats Summary */}
-      <Divider sx={{ my: 2 }} />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-        <Typography variant="caption" color="text.secondary">
-          {stats.totalContributions} contribution{stats.totalContributions !== 1 ? 's' : ''} over {stats.daysSinceFirstContribution} day{stats.daysSinceFirstContribution !== 1 ? 's' : ''}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          ~{formatCurrency(stats.averageWeeklyRate)}/week
-        </Typography>
-      </Box>
+      <StatsSummary
+        totalContributions={stats.totalContributions}
+        daysSinceFirstContribution={stats.daysSinceFirstContribution}
+        averageWeeklyRate={stats.averageWeeklyRate}
+      />
     </Box>
   );
 }
