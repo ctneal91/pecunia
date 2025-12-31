@@ -20,7 +20,26 @@ module Api
 
           # Send email notifications for newly achieved milestones
           new_milestones.each do |milestone|
-            MilestoneMailer.achievement(@goal.user, @goal, milestone.percentage).deliver_later
+            if @goal.user.present?
+              MilestoneMailer.achievement(@goal.user, @goal, milestone.percentage).deliver_later
+            end
+          end
+
+          # Send email notifications to group members for group goals
+          if @goal.group.present?
+            @goal.group.memberships.includes(:user).each do |membership|
+              # Don't send notification to the person who made the contribution
+              next if membership.user == current_user
+
+              GroupActivityMailer.new_contribution(membership.user, contribution, @goal).deliver_later
+            end
+
+            # Check if goal was just completed and notify group members
+            if new_milestones.any? { |m| m.percentage == 100 }
+              @goal.group.memberships.includes(:user).each do |membership|
+                GroupActivityMailer.goal_completed(membership.user, @goal).deliver_later
+              end
+            end
           end
 
           render json: {

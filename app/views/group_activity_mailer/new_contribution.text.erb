@@ -1,0 +1,30 @@
+💰 New Contribution
+
+Hi <%= @member.name || @member.email.split('@').first.capitalize %>,
+
+Great news! A new contribution has been made to your group goal.
+
+Contributor: <%= @contributor.name || @contributor.email.split('@').first.capitalize %>
+Amount: <%= number_to_currency(@contribution.amount) %>
+<% if @contribution.note.present? %>
+Note: "<%= @contribution.note %>"
+<% end %>
+
+---
+
+Goal: <%= @goal.title %>
+
+Current Progress: <%= number_to_currency(@goal.current_amount) %> / <%= number_to_currency(@goal.target_amount) %>
+<%= @goal.progress_percentage.round(1) %>% complete
+
+<% if @goal.remaining_amount > 0 %>
+Only <%= number_to_currency(@goal.remaining_amount) %> to go!
+<% end %>
+
+Keep the momentum going in <%= @group.name %>!
+
+View goal progress:
+<%= @goal_url %>
+
+---
+You're receiving this email because you're a member of <%= @group.name %>.

@@ -1,0 +1,27 @@
+🎉 Goal Completed!
+
+Hi <%= @member.name || @member.email.split('@').first.capitalize %>,
+
+🎊 Congratulations! Your group has achieved a major milestone! 🎊
+
+✓ 100% COMPLETE
+
+Goal: <%= @goal.title %>
+<% if @goal.description.present? %>
+Description: <%= @goal.description %>
+<% end %>
+
+Achievement: <%= number_to_currency(@goal.target_amount) %>
+🎯 Goal Achieved!
+
+Total contributions: <%= @goal.contributions.count %>
+
+What an amazing accomplishment for <%= @group.name %>! 🎉
+
+This success is the result of everyone's dedication and teamwork. Take a moment to celebrate this achievement together!
+
+View completed goal:
+<%= @goal_url %>
+
+---
+You're receiving this email because you're a member of <%= @group.name %>.

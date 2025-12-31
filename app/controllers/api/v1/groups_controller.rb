@@ -58,6 +58,11 @@ module Api
 
         membership = group.memberships.build(user: current_user, role: "member")
         if membership.save
+          # Send email notifications to existing members about the new member
+          group.memberships.includes(:user).where.not(user: current_user).each do |existing_membership|
+            GroupActivityMailer.new_member(existing_membership.user, current_user, group).deliver_later
+          end
+
           render json: { group: GroupSerializer.new(group, current_user: current_user).as_json }, status: :created
         else
           render json: { errors: membership.errors.full_messages }, status: :unprocessable_entity

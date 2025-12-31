@@ -1,0 +1,20 @@
+👋 New Member!
+
+Hi <%= @existing_member.name || @existing_member.email.split('@').first.capitalize %>,
+
+Your group is growing! A new member has joined <%= @group.name %>.
+
+New Member: <%= @new_member.name || @new_member.email.split('@').first.capitalize %>
+Email: <%= @new_member.email %>
+
+Group Stats:
+- Members: <%= @group.memberships.count %>
+- Group Goals: <%= @group.goals.count %>
+
+Welcome them to the group and keep working together toward your shared financial goals!
+
+View group:
+<%= @group_url %>
+
+---
+You're receiving this email because you're a member of <%= @group.name %>.
