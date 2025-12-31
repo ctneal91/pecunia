@@ -18,6 +18,11 @@ module Api
           @goal.reload
           new_milestones = MilestoneTracker.new(@goal).check_and_record
 
+          # Send email notifications for newly achieved milestones
+          new_milestones.each do |milestone|
+            MilestoneMailer.achievement(@goal.user, @goal, milestone.percentage).deliver_later
+          end
+
           render json: {
             contribution: ContributionSerializer.new(contribution).as_json,
             goal: GoalSerializer.new(@goal).as_json,

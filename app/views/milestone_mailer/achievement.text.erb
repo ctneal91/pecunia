@@ -1,0 +1,25 @@
+🎉 Milestone Achieved!
+
+Hi <%= @user.name || @user.email.split('@').first.capitalize %>,
+
+Congratulations! You've reached <%= @milestone_percentage %>% of your goal!
+
+Goal: <%= @goal.title %>
+<% if @goal.description.present? %>
+Description: <%= @goal.description %>
+<% end %>
+
+Current Progress: <%= number_to_currency(@goal.current_amount) %> / <%= number_to_currency(@goal.target_amount) %>
+<%= @goal.progress_percentage.round(1) %>% complete
+
+<% if @goal.remaining_amount > 0 %>
+Only <%= number_to_currency(@goal.remaining_amount) %> to go!
+<% end %>
+
+Keep up the great work! You're <%= @milestone_percentage %>% closer to achieving your financial goal.
+
+View your goal progress:
+<%= @goal_url %>
+
+---
+You're receiving this email because you reached a milestone in your goal tracking with Pecunia.
