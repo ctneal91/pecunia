@@ -1,40 +1,29 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Container,
-  Typography,
-  Box,
-  Paper,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Alert,
-  Divider,
-} from '@mui/material';
+import { Container, Box, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import RepeatIcon from '@mui/icons-material/Repeat';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
 import { RecurringContributionInput } from '../../types/goal';
 import MilestoneCelebration from '../../components/MilestoneCelebration';
-import ProgressChart from '../../components/ProgressChart';
-import SavingsProjection from '../../components/SavingsProjection';
-import RecurringContributionForm from '../../components/RecurringContributionForm';
-import RecurringContributionList from '../../components/RecurringContributionList';
 import GoalHeader from '../../components/GoalHeader';
 import ContributorsSection from '../../components/ContributorsSection';
 import ContributionForm from '../../components/ContributionForm';
 import { exportGoalReport } from '../../utils/export';
-import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useGoalData } from '../../hooks/useGoalData';
 import { useContribution } from '../../hooks/useContribution';
 import { SPACING } from '../../constants/ui';
-import { CONFIRMATION_MESSAGES, ERROR_MESSAGES, LOADING_MESSAGES } from '../../constants/messages';
+import { CONFIRMATION_MESSAGES } from '../../constants/messages';
+import {
+  LoadingState,
+  NotFoundState,
+  RecurringContributionsSection,
+  ProgressChartSection,
+  SavingsProjectionSection,
+  ContributionHistory,
+  UnauthenticatedMessage,
+} from './components';
 
 export default function GoalDetail() {
   const { id } = useParams<{ id: string }>();
@@ -51,8 +40,6 @@ export default function GoalDetail() {
   const contributionHook = useContribution();
 
   const [newMilestones, setNewMilestones] = useState<number[]>([]);
-  const [showRecurringForm, setShowRecurringForm] = useState(false);
-  const [recurringLoading, setRecurringLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   const handleAddContribution = async (e: React.FormEvent) => {
@@ -87,13 +74,10 @@ export default function GoalDetail() {
   const handleCreateRecurring = async (data: RecurringContributionInput) => {
     if (!goal || typeof goal.id !== 'number') return;
 
-    setRecurringLoading(true);
     const response = await api.createRecurringContribution(goal.id, data);
     if (response.data) {
       await refreshGoalData();
-      setShowRecurringForm(false);
     }
-    setRecurringLoading(false);
   };
 
   const handleToggleRecurringActive = async (rcId: number, isActive: boolean) => {
@@ -126,26 +110,11 @@ export default function GoalDetail() {
   };
 
   if (loading) {
-    return (
-      <Container maxWidth="md">
-        <Box sx={{ mt: SPACING.PAGE_TOP_MARGIN }}>
-          <Typography>{LOADING_MESSAGES.LOADING}</Typography>
-        </Box>
-      </Container>
-    );
+    return <LoadingState />;
   }
 
   if (!goal) {
-    return (
-      <Container maxWidth="md">
-        <Box sx={{ mt: SPACING.PAGE_TOP_MARGIN }}>
-          <Alert severity="error">{ERROR_MESSAGES.GOAL_NOT_FOUND}</Alert>
-          <Button onClick={() => navigate('/goals')} sx={{ mt: SPACING.SECTION_MARGIN_BOTTOM_SMALL }}>
-            Back to Goals
-          </Button>
-        </Box>
-      </Container>
-    );
+    return <NotFoundState onBackToGoals={() => navigate('/goals')} />;
   }
 
   return (
@@ -183,122 +152,40 @@ export default function GoalDetail() {
         />
 
         {user && (
-          <Paper sx={{ p: SPACING.PADDING_STANDARD, mb: SPACING.SECTION_MARGIN_BOTTOM }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: SPACING.SECTION_MARGIN_BOTTOM_SMALL }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.BUTTON_GAP }}>
-                <RepeatIcon color="primary" />
-                <Typography variant="h6">
-                  Recurring Contributions
-                </Typography>
-              </Box>
-              {!showRecurringForm && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<AddIcon />}
-                  onClick={() => setShowRecurringForm(true)}
-                >
-                  Add Recurring
-                </Button>
-              )}
-            </Box>
-
-            {showRecurringForm && (
-              <Box sx={{ mb: SPACING.SECTION_MARGIN_BOTTOM_SMALL }}>
-                <RecurringContributionForm
-                  onSubmit={handleCreateRecurring}
-                  onCancel={() => setShowRecurringForm(false)}
-                  loading={recurringLoading}
-                />
-              </Box>
-            )}
-
-            <RecurringContributionList
-              recurringContributions={recurringContributions}
-              onToggleActive={handleToggleRecurringActive}
-              onDelete={handleDeleteRecurring}
-            />
-          </Paper>
-        )}
-
-        {user && contributions.length > 0 && (
-          <Paper sx={{ p: SPACING.PADDING_STANDARD, mb: SPACING.SECTION_MARGIN_BOTTOM }}>
-            <Typography variant="h6" gutterBottom>
-              Progress Over Time
-            </Typography>
-            <ProgressChart
-              contributions={contributions}
-              milestones={goal.milestones}
-              targetAmount={goal.target_amount}
-              currentAmount={goal.current_amount}
-            />
-          </Paper>
+          <RecurringContributionsSection
+            recurringContributions={recurringContributions}
+            onCreateRecurring={handleCreateRecurring}
+            onToggleActive={handleToggleRecurringActive}
+            onDelete={handleDeleteRecurring}
+          />
         )}
 
         {user && (
-          <Paper sx={{ p: SPACING.PADDING_STANDARD, mb: SPACING.SECTION_MARGIN_BOTTOM }}>
-            <Typography variant="h6" gutterBottom>
-              Savings Projection
-            </Typography>
-            <SavingsProjection
-              contributions={contributions}
-              targetAmount={goal.target_amount}
-              currentAmount={goal.current_amount}
-              targetDate={goal.target_date}
-            />
-          </Paper>
+          <ProgressChartSection
+            contributions={contributions}
+            milestones={goal.milestones}
+            targetAmount={goal.target_amount}
+            currentAmount={goal.current_amount}
+          />
         )}
 
-        {user && contributions.length > 0 && (
-          <Paper sx={{ p: SPACING.PADDING_STANDARD }}>
-            <Typography variant="h6" gutterBottom>
-              Contribution History
-            </Typography>
-            <List>
-              {contributions.map((contribution, index) => (
-                <Box key={contribution.id}>
-                  {index > 0 && <Divider />}
-                  <ListItem
-                    secondaryAction={
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={() => handleDeleteContribution(contribution.id as number)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.BUTTON_GAP }}>
-                          <Typography
-                            variant="body1"
-                            sx={{ color: contribution.amount >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}
-                          >
-                            {contribution.amount >= 0 ? '+' : ''}{formatCurrency(contribution.amount)}
-                          </Typography>
-                          {contribution.note && (
-                            <Typography variant="body2" color="text.secondary">
-                              — {contribution.note}
-                            </Typography>
-                          )}
-                        </Box>
-                      }
-                      secondary={formatDate(contribution.contributed_at)}
-                    />
-                  </ListItem>
-                </Box>
-              ))}
-            </List>
-          </Paper>
+        {user && (
+          <SavingsProjectionSection
+            contributions={contributions}
+            targetAmount={goal.target_amount}
+            currentAmount={goal.current_amount}
+            targetDate={goal.target_date}
+          />
         )}
 
-        {!user && (
-          <Alert severity="info">
-            Sign up to track your contribution history and sync across devices.
-          </Alert>
+        {user && (
+          <ContributionHistory
+            contributions={contributions}
+            onDelete={handleDeleteContribution}
+          />
         )}
+
+        {!user && <UnauthenticatedMessage />}
       </Box>
 
       {newMilestones.length > 0 && goal && (
