@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Goal, Contribution, ContributionInput } from '../types/goal';
+import { Goal, Contribution, ContributionInput, GoalInput } from '../types/goal';
 import { api } from '../services/api';
 
 interface UseContributionResult {
@@ -15,7 +15,7 @@ interface UseContributionResult {
     goal: Goal,
     isAuthenticated: boolean,
     onSuccess: (contribution: Contribution, updatedGoal: Goal, newMilestones?: number[]) => void,
-    updateGoalCallback?: (id: number | string, updates: Partial<Goal>) => Promise<Goal | null>
+    updateGoalCallback?: (id: number | string, updates: Partial<GoalInput>) => Promise<Goal | null>
   ) => Promise<void>;
   resetForm: () => void;
 }
@@ -79,7 +79,7 @@ export function useContribution(): UseContributionResult {
     goal: Goal,
     finalAmount: number,
     onSuccess: (contribution: Contribution, updatedGoal: Goal) => void,
-    updateGoalCallback?: (id: number | string, updates: Partial<Goal>) => Promise<Goal | null>
+    updateGoalCallback?: (id: number | string, updates: Partial<GoalInput>) => Promise<Goal | null>
   ) => {
     if (!updateGoalCallback) return;
 
@@ -93,11 +93,11 @@ export function useContribution(): UseContributionResult {
       const mockContribution: Contribution = {
         id: Date.now(),
         goal_id: goal.id as number,
+        user_id: null,
         amount: finalAmount,
-        note: note || undefined,
+        note: note || null,
         contributed_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
       onSuccess(mockContribution, updated);
@@ -109,7 +109,7 @@ export function useContribution(): UseContributionResult {
     goal: Goal,
     isAuthenticated: boolean,
     onSuccess: (contribution: Contribution, updatedGoal: Goal, newMilestones?: number[]) => void,
-    updateGoalCallback?: (id: number | string, updates: Partial<Goal>) => Promise<Goal | null>
+    updateGoalCallback?: (id: number | string, updates: Partial<GoalInput>) => Promise<Goal | null>
   ) => {
     if (!amount) return;
 

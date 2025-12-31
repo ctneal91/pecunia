@@ -325,4 +325,84 @@ describe('GoalDetail', () => {
       expect(checkIcons.length).toBeGreaterThan(0);
     });
   });
+
+  describe('contribution actions', () => {
+    beforeEach(() => {
+      mockedApi.getMe.mockResolvedValue({
+        data: { user: { id: 1, email: 'test@example.com', name: 'Test', avatar_url: null } }
+      });
+      mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal] } });
+      mockedApi.getGoal.mockResolvedValue({ data: { goal: mockGoal } });
+      mockedApi.getContributions.mockResolvedValue({
+        data: { contributions: [mockContribution] }
+      });
+    });
+
+    it('deletes contribution when delete button clicked and confirmed', async () => {
+      window.confirm = jest.fn(() => true);
+      mockedApi.deleteContribution.mockResolvedValue({ data: { goal: mockGoal } });
+
+      renderGoalDetail();
+
+      await waitFor(() => {
+        expect(screen.getByText('Contribution History')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getByLabelText('delete');
+      fireEvent.click(deleteButton);
+
+      await waitFor(() => {
+        expect(mockedApi.deleteContribution).toHaveBeenCalledWith(1, 1);
+      });
+    });
+
+    it('does not delete contribution when delete is cancelled', async () => {
+      window.confirm = jest.fn(() => false);
+
+      renderGoalDetail();
+
+      await waitFor(() => {
+        expect(screen.getByText('Contribution History')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getByLabelText('delete');
+      fireEvent.click(deleteButton);
+
+      expect(mockedApi.deleteContribution).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('recurring contributions', () => {
+    const mockRecurring = {
+      id: 1,
+      goal_id: 1,
+      user_id: 1,
+      amount: 50,
+      frequency: 'weekly' as const,
+      is_active: true,
+      next_occurrence_at: '2025-01-22',
+      end_date: null,
+      note: null,
+      created_at: '2025-01-01T00:00:00Z',
+    };
+
+    beforeEach(() => {
+      mockedApi.getMe.mockResolvedValue({
+        data: { user: { id: 1, email: 'test@example.com', name: 'Test', avatar_url: null } }
+      });
+      mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal] } });
+      mockedApi.getGoal.mockResolvedValue({ data: { goal: mockGoal } });
+      mockedApi.getRecurringContributions.mockResolvedValue({
+        data: { recurring_contributions: [mockRecurring] }
+      });
+    });
+
+    it('displays recurring contributions section', async () => {
+      renderGoalDetail();
+
+      await waitFor(() => {
+        expect(screen.getByText('Recurring Contributions')).toBeInTheDocument();
+      });
+    });
+  });
 });

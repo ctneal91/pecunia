@@ -59,7 +59,7 @@ export function useGoalData(
       setGoal(goalResponse.data?.goal || fallbackGoal);
       setContributions(contributionsResponse.data?.contributions || []);
       setRecurringContributions(recurringResponse.data?.recurring_contributions || []);
-    } catch (error) {
+    } catch {
       setGoal(fallbackGoal);
     } finally {
       setLoading(false);
