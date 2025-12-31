@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Container,
-  Box,
-  Paper,
-  Typography,
-  Alert,
-  Stepper,
-  Step,
-  StepLabel,
-} from '@mui/material';
+import { Container, Box, Paper } from '@mui/material';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
@@ -18,6 +9,7 @@ import { Group } from '../../types/group';
 import { GoalTemplate } from '../../data/goalTemplates';
 import { TemplateStep, FormStep } from '../../components/GoalForm';
 import { SPACING } from '../../constants/ui';
+import { PageHeader } from './components';
 
 const steps = ['Choose Template', 'Customize Goal'];
 
@@ -147,25 +139,12 @@ export default function GoalForm() {
     <Container maxWidth={isEditing ? 'sm' : 'md'}>
       <Box sx={{ mt: SPACING.SECTION_MARGIN_BOTTOM }}>
         <Paper sx={{ p: SPACING.SECTION_MARGIN_BOTTOM }}>
-          <Typography variant="h5" component="h1" gutterBottom>
-            {isEditing ? 'Edit Goal' : 'Create New Goal'}
-          </Typography>
-
-          {!isEditing && (
-            <Stepper activeStep={activeStep} sx={{ mb: SPACING.SECTION_MARGIN_BOTTOM }}>
-              {steps.map((label) => (
-                <Step key={label}>
-                  <StepLabel>{label}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-          )}
-
-          {error && (
-            <Alert severity="error" sx={{ mb: SPACING.SECTION_MARGIN_BOTTOM_SMALL }}>
-              {error}
-            </Alert>
-          )}
+          <PageHeader
+            isEditing={isEditing}
+            activeStep={activeStep}
+            steps={steps}
+            error={error}
+          />
 
           {!isEditing && activeStep === 0 ? (
             <TemplateStep
