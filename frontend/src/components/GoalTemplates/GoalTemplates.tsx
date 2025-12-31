@@ -16,19 +16,11 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { goalTemplates, GoalTemplate, TemplateCategory } from '../../data/goalTemplates';
+import { formatCurrency } from '../../utils/formatters';
 
 interface GoalTemplatesProps {
   onSelectTemplate: (template: GoalTemplate) => void;
   selectedTemplateId?: string;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function TemplateCard({

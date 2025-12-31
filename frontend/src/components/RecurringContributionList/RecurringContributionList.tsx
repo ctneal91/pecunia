@@ -14,28 +14,12 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import { RecurringContribution, FREQUENCY_LABELS } from '../../types/goal';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 
 interface RecurringContributionListProps {
   recurringContributions: RecurringContribution[];
   onToggleActive: (id: number, isActive: boolean) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 export default function RecurringContributionList({

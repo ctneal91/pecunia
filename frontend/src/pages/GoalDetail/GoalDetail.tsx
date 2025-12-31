@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -23,37 +23,23 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import GroupIcon from '@mui/icons-material/Group';
+import PersonIcon from '@mui/icons-material/Person';
+import RepeatIcon from '@mui/icons-material/Repeat';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
-import { Goal, Contribution, ContributionInput, Contributor, RecurringContribution, RecurringContributionInput, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
-import GroupIcon from '@mui/icons-material/Group';
-import PersonIcon from '@mui/icons-material/Person';
+import { Goal, Contribution, RecurringContribution, RecurringContributionInput, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
 import MilestoneCelebration from '../../components/MilestoneCelebration';
 import MilestoneProgress from '../../components/MilestoneProgress';
 import ProgressChart from '../../components/ProgressChart';
 import SavingsProjection from '../../components/SavingsProjection';
 import RecurringContributionForm from '../../components/RecurringContributionForm';
 import RecurringContributionList from '../../components/RecurringContributionList';
-import RepeatIcon from '@mui/icons-material/Repeat';
 import { exportGoalReport } from '../../utils/export';
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { useGoalData } from '../../hooks/useGoalData';
+import { useContribution } from '../../hooks/useContribution';
 
 export default function GoalDetail() {
   const { id } = useParams<{ id: string }>();
@@ -61,102 +47,35 @@ export default function GoalDetail() {
   const { user } = useAuth();
   const { goals, updateGoal, refreshGoals } = useGoals();
 
-  const [goal, setGoal] = useState<Goal | null>(null);
-  const [contributions, setContributions] = useState<Contribution[]>([]);
-  const [recurringContributions, setRecurringContributions] = useState<RecurringContribution[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { goal, contributions, recurringContributions, loading, refreshGoalData } = useGoalData(
+    id,
+    goals,
+    !!user
+  );
 
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
-  const [isWithdrawal, setIsWithdrawal] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const contributionHook = useContribution();
+
   const [newMilestones, setNewMilestones] = useState<number[]>([]);
   const [showRecurringForm, setShowRecurringForm] = useState(false);
   const [recurringLoading, setRecurringLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
-
-    const foundGoal = goals.find((g) => String(g.id) === id);
-
-    if (user && foundGoal && typeof foundGoal.id === 'number') {
-      // Fetch full goal data including contributors for logged-in users
-      api.getGoal(foundGoal.id).then((response) => {
-        if (response.data) {
-          setGoal(response.data.goal);
-        } else if (foundGoal) {
-          setGoal(foundGoal);
-        }
-        setLoading(false);
-      });
-
-      api.getContributions(foundGoal.id).then((response) => {
-        if (response.data) {
-          setContributions(response.data.contributions);
-        }
-      });
-
-      api.getRecurringContributions(foundGoal.id).then((response) => {
-        if (response.data) {
-          setRecurringContributions(response.data.recurring_contributions);
-        }
-      });
-    } else if (foundGoal) {
-      setGoal(foundGoal);
-      setLoading(false);
-    } else {
-      setLoading(false);
-    }
-  }, [id, goals, user]);
-
   const handleAddContribution = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!goal || !amount) return;
+    if (!goal) return;
 
-    const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('Please enter a valid amount');
-      return;
-    }
-
-    const finalAmount = isWithdrawal ? -parsedAmount : parsedAmount;
-    setSubmitting(true);
-    setError(null);
-
-    if (user && typeof goal.id === 'number') {
-      const input: ContributionInput = {
-        amount: finalAmount,
-        note: note || undefined,
-        contributed_at: new Date().toISOString(),
-      };
-
-      const response = await api.createContribution(goal.id, input);
-      if (response.error) {
-        setError(response.error);
-      } else if (response.data) {
-        setContributions((prev) => [response.data!.contribution, ...prev]);
-        setGoal(response.data.goal);
-        if (response.data.new_milestones && response.data.new_milestones.length > 0) {
-          setNewMilestones(response.data.new_milestones);
+    await contributionHook.handleSubmit(
+      goal,
+      !!user,
+      async (contribution, updatedGoal, newMilestonesData) => {
+        if (newMilestonesData && newMilestonesData.length > 0) {
+          setNewMilestones(newMilestonesData);
         }
         await refreshGoals();
-        setAmount('');
-        setNote('');
-      }
-    } else {
-      // Guest mode: update goal directly
-      const newAmount = goal.current_amount + finalAmount;
-      const updated = await updateGoal(goal.id, { current_amount: Math.max(0, newAmount) });
-      if (updated) {
-        setGoal(updated);
-      }
-      setAmount('');
-      setNote('');
-    }
-
-    setSubmitting(false);
+        await refreshGoalData();
+      },
+      updateGoal
+    );
   };
 
   const handleDeleteContribution = async (contributionId: number) => {
@@ -165,9 +84,8 @@ export default function GoalDetail() {
 
     const response = await api.deleteContribution(goal.id, contributionId);
     if (response.data) {
-      setContributions((prev) => prev.filter((c) => c.id !== contributionId));
-      setGoal(response.data.goal);
       await refreshGoals();
+      await refreshGoalData();
     }
   };
 
@@ -177,30 +95,28 @@ export default function GoalDetail() {
     setRecurringLoading(true);
     const response = await api.createRecurringContribution(goal.id, data);
     if (response.data) {
-      setRecurringContributions((prev) => [...prev, response.data!.recurring_contribution]);
+      await refreshGoalData();
       setShowRecurringForm(false);
     }
     setRecurringLoading(false);
   };
 
-  const handleToggleRecurringActive = async (id: number, isActive: boolean) => {
+  const handleToggleRecurringActive = async (rcId: number, isActive: boolean) => {
     if (!goal || typeof goal.id !== 'number') return;
 
-    const response = await api.updateRecurringContribution(goal.id, id, { is_active: isActive });
+    const response = await api.updateRecurringContribution(goal.id, rcId, { is_active: isActive });
     if (response.data) {
-      setRecurringContributions((prev) =>
-        prev.map((rc) => (rc.id === id ? response.data!.recurring_contribution : rc))
-      );
+      await refreshGoalData();
     }
   };
 
-  const handleDeleteRecurring = async (id: number) => {
+  const handleDeleteRecurring = async (rcId: number) => {
     if (!goal || typeof goal.id !== 'number') return;
     if (!window.confirm('Delete this recurring contribution?')) return;
 
-    const response = await api.deleteRecurringContribution(goal.id, id);
+    const response = await api.deleteRecurringContribution(goal.id, rcId);
     if (!response.error) {
-      setRecurringContributions((prev) => prev.filter((rc) => rc.id !== id));
+      await refreshGoalData();
     }
   };
 
@@ -373,9 +289,9 @@ export default function GoalDetail() {
             Add Contribution
           </Typography>
 
-          {error && (
+          {contributionHook.error && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
+              {contributionHook.error}
             </Alert>
           )}
 
@@ -384,16 +300,16 @@ export default function GoalDetail() {
               <Chip
                 icon={<AddIcon />}
                 label="Deposit"
-                color={!isWithdrawal ? 'primary' : 'default'}
-                onClick={() => setIsWithdrawal(false)}
-                variant={!isWithdrawal ? 'filled' : 'outlined'}
+                color={!contributionHook.isWithdrawal ? 'primary' : 'default'}
+                onClick={() => contributionHook.setIsWithdrawal(false)}
+                variant={!contributionHook.isWithdrawal ? 'filled' : 'outlined'}
               />
               <Chip
                 icon={<RemoveIcon />}
                 label="Withdrawal"
-                color={isWithdrawal ? 'error' : 'default'}
-                onClick={() => setIsWithdrawal(true)}
-                variant={isWithdrawal ? 'filled' : 'outlined'}
+                color={contributionHook.isWithdrawal ? 'error' : 'default'}
+                onClick={() => contributionHook.setIsWithdrawal(true)}
+                variant={contributionHook.isWithdrawal ? 'filled' : 'outlined'}
               />
             </Box>
 
@@ -401,8 +317,8 @@ export default function GoalDetail() {
               <TextField
                 label="Amount"
                 type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                value={contributionHook.amount}
+                onChange={(e) => contributionHook.setAmount(e.target.value)}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
@@ -412,17 +328,17 @@ export default function GoalDetail() {
               />
               <TextField
                 label="Note (optional)"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
+                value={contributionHook.note}
+                onChange={(e) => contributionHook.setNote(e.target.value)}
                 sx={{ flex: 1, minWidth: 200 }}
               />
               <Button
                 type="submit"
                 variant="contained"
-                color={isWithdrawal ? 'error' : 'primary'}
-                disabled={submitting || !amount}
+                color={contributionHook.isWithdrawal ? 'error' : 'primary'}
+                disabled={contributionHook.submitting || !contributionHook.amount}
               >
-                {submitting ? 'Adding...' : isWithdrawal ? 'Withdraw' : 'Add'}
+                {contributionHook.submitting ? 'Adding...' : contributionHook.isWithdrawal ? 'Withdraw' : 'Add'}
               </Button>
             </Box>
           </Box>

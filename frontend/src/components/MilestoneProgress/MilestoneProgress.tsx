@@ -2,17 +2,11 @@ import { Box, Typography, Tooltip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Milestone, MILESTONE_PERCENTAGES } from '../../types/goal';
+import { formatDateShort } from '../../utils/formatters';
 
 interface MilestoneProgressProps {
   milestones: Milestone[];
   progressPercentage: number;
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 export default function MilestoneProgress({
@@ -38,7 +32,7 @@ export default function MilestoneProgress({
               key={percentage}
               title={
                 isAchieved && milestone
-                  ? `Achieved on ${formatDate(milestone.achieved_at)}`
+                  ? `Achieved on ${formatDateShort(milestone.achieved_at)}`
                   : isNext
                     ? `${percentage - progressPercentage}% to go`
                     : ''

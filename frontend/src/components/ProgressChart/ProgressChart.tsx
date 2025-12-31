@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { Contribution, Milestone } from '../../types/goal';
+import { formatCurrency } from '../../utils/formatters';
 
 interface ProgressChartProps {
   contributions: Contribution[];
@@ -25,16 +26,7 @@ interface ChartDataPoint {
   cumulative: number;
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatDate(dateString: string): string {
+function formatDateShort(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -113,7 +105,7 @@ export default function ProgressChart({
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
           <XAxis
             dataKey="date"
-            tickFormatter={formatDate}
+            tickFormatter={formatDateShort}
             tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
             stroke={theme.palette.divider}
           />
@@ -125,7 +117,7 @@ export default function ProgressChart({
           />
           <Tooltip
             formatter={(value) => [formatCurrency(value as number), 'Total Saved']}
-            labelFormatter={(label) => formatDate(label as string)}
+            labelFormatter={(label) => formatDateShort(label as string)}
             contentStyle={{
               backgroundColor: theme.palette.background.paper,
               border: `1px solid ${theme.palette.divider}`,

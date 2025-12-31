@@ -26,15 +26,7 @@ import {
   GOAL_TYPE_ICONS,
   GOAL_TYPE_COLORS,
 } from '../../types/goal';
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+import { formatCurrency } from '../../utils/formatters';
 
 function GoalItem({ goal, onClick }: { goal: Goal; onClick: () => void }) {
   return (

@@ -22,22 +22,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useGoals } from '../../contexts/GoalsContext';
 import { api, DashboardStats, RecentContribution } from '../../services/api';
 import { Goal, GOAL_TYPE_ICONS } from '../../types/goal';
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-}
+import { formatCurrency, formatDateShort } from '../../utils/formatters';
 
 function StatCard({ title, value, subtitle, icon }: { title: string; value: string; subtitle?: string; icon: React.ReactNode }) {
   return (
@@ -313,7 +298,7 @@ function AuthenticatedDashboard() {
                       }
                       secondary={
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(contribution.contributed_at)}
+                          {formatDateShort(contribution.contributed_at)}
                           {contribution.note && ` — ${contribution.note}`}
                         </Typography>
                       }

@@ -21,15 +21,7 @@ import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Goal, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS } from '../../types/goal';
 import ExportDialog from '../../components/ExportDialog';
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+import { formatCurrency } from '../../utils/formatters';
 
 function GoalCard({ goal, onClick, onEdit, onDelete }: { goal: Goal; onClick: () => void; onEdit: () => void; onDelete: () => void }) {
   const progressColor = goal.completed ? 'success' : 'primary';

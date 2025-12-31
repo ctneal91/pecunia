@@ -6,6 +6,7 @@ import SavingsIcon from '@mui/icons-material/Savings';
 import WarningIcon from '@mui/icons-material/Warning';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Contribution } from '../../types/goal';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 
 interface SavingsProjectionProps {
   contributions: Contribution[];
@@ -24,23 +25,6 @@ interface ProjectionStats {
   contributionFrequency: string;
   totalContributions: number;
   daysSinceFirstContribution: number;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 function calculateProjectionStats(
