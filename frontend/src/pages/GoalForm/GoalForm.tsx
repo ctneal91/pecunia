@@ -2,38 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
-  Typography,
   Box,
   Paper,
-  TextField,
-  Button,
-  MenuItem,
+  Typography,
   Alert,
-  InputAdornment,
   Stepper,
   Step,
   StepLabel,
-  Divider,
 } from '@mui/material';
 import { useGoals } from '../../contexts/GoalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
-import { GoalType, GOAL_TYPE_LABELS, GOAL_TYPE_ICONS, GoalInput } from '../../types/goal';
+import { GoalType, GoalInput } from '../../types/goal';
 import { Group } from '../../types/group';
-import GoalTemplates from '../../components/GoalTemplates';
 import { GoalTemplate } from '../../data/goalTemplates';
-
-const GOAL_TYPES: GoalType[] = [
-  'emergency_fund',
-  'savings',
-  'debt_payoff',
-  'retirement',
-  'vacation',
-  'home',
-  'education',
-  'vehicle',
-  'other',
-];
+import { TemplateStep, FormStep } from '../../components/GoalForm';
+import { SPACING } from '../../constants/ui';
 
 const steps = ['Choose Template', 'Customize Goal'];
 
@@ -159,183 +143,16 @@ export default function GoalForm() {
     }
   };
 
-  const renderTemplateStep = () => (
-    <Box>
-      <GoalTemplates
-        onSelectTemplate={handleSelectTemplate}
-        selectedTemplateId={selectedTemplate?.id}
-      />
-
-      <Divider sx={{ my: 3 }} />
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Button
-          variant="outlined"
-          onClick={() => navigate('/goals')}
-        >
-          Cancel
-        </Button>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="text"
-            onClick={handleSkipTemplate}
-          >
-            Skip - Create Custom Goal
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleNextStep}
-            disabled={!selectedTemplate}
-          >
-            Continue with Template
-          </Button>
-        </Box>
-      </Box>
-    </Box>
-  );
-
-  const renderFormStep = () => (
-    <Box component="form" onSubmit={handleSubmit}>
-      {selectedTemplate && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Using template: <strong>{selectedTemplate.name}</strong>. Customize the details below.
-        </Alert>
-      )}
-
-      <TextField
-        label="Goal Title"
-        fullWidth
-        required
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        margin="normal"
-        placeholder="e.g., Emergency Fund"
-      />
-
-      <TextField
-        select
-        label="Goal Type"
-        fullWidth
-        required
-        value={goalType}
-        onChange={(e) => setGoalType(e.target.value as GoalType)}
-        margin="normal"
-      >
-        {GOAL_TYPES.map((type) => (
-          <MenuItem key={type} value={type}>
-            {GOAL_TYPE_ICONS[type]} {GOAL_TYPE_LABELS[type]}
-          </MenuItem>
-        ))}
-      </TextField>
-
-      <TextField
-        label="Target Amount"
-        fullWidth
-        required
-        type="number"
-        value={targetAmount}
-        onChange={(e) => setTargetAmount(e.target.value)}
-        margin="normal"
-        InputProps={{
-          startAdornment: <InputAdornment position="start">$</InputAdornment>,
-        }}
-        inputProps={{ min: 0, step: 0.01 }}
-      />
-
-      <TextField
-        label="Current Amount"
-        fullWidth
-        type="number"
-        value={currentAmount}
-        onChange={(e) => setCurrentAmount(e.target.value)}
-        margin="normal"
-        InputProps={{
-          startAdornment: <InputAdornment position="start">$</InputAdornment>,
-        }}
-        inputProps={{ min: 0, step: 0.01 }}
-        helperText="How much have you saved so far?"
-      />
-
-      <TextField
-        label="Target Date"
-        fullWidth
-        type="date"
-        value={targetDate}
-        onChange={(e) => setTargetDate(e.target.value)}
-        margin="normal"
-        InputLabelProps={{ shrink: true }}
-        helperText="Optional: When do you want to reach this goal?"
-      />
-
-      <TextField
-        label="Description"
-        fullWidth
-        multiline
-        rows={3}
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        margin="normal"
-        placeholder="Optional: Add notes about this goal"
-      />
-
-      {user && groups.length > 0 && (
-        <TextField
-          select
-          label="Share with Group"
-          fullWidth
-          value={groupId}
-          onChange={(e) => setGroupId(e.target.value === '' ? '' : Number(e.target.value))}
-          margin="normal"
-          helperText="Optional: Assign this goal to a group so all members can see it"
-        >
-          <MenuItem value="">Personal (not shared)</MenuItem>
-          {groups.map((group) => (
-            <MenuItem key={group.id} value={group.id}>
-              {group.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      )}
-
-      <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-        {!isEditing && (
-          <Button
-            variant="outlined"
-            onClick={handleBackStep}
-            disabled={loading}
-          >
-            Back
-          </Button>
-        )}
-        <Button
-          variant="outlined"
-          onClick={() => navigate('/goals')}
-          disabled={loading}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading}
-          sx={{ flex: 1 }}
-        >
-          {loading ? 'Saving...' : isEditing ? 'Update Goal' : 'Create Goal'}
-        </Button>
-      </Box>
-    </Box>
-  );
-
   return (
     <Container maxWidth={isEditing ? 'sm' : 'md'}>
-      <Box sx={{ mt: 4 }}>
-        <Paper sx={{ p: 4 }}>
+      <Box sx={{ mt: SPACING.SECTION_MARGIN_BOTTOM }}>
+        <Paper sx={{ p: SPACING.SECTION_MARGIN_BOTTOM }}>
           <Typography variant="h5" component="h1" gutterBottom>
             {isEditing ? 'Edit Goal' : 'Create New Goal'}
           </Typography>
 
           {!isEditing && (
-            <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+            <Stepper activeStep={activeStep} sx={{ mb: SPACING.SECTION_MARGIN_BOTTOM }}>
               {steps.map((label) => (
                 <Step key={label}>
                   <StepLabel>{label}</StepLabel>
@@ -345,12 +162,44 @@ export default function GoalForm() {
           )}
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: SPACING.SECTION_MARGIN_BOTTOM_SMALL }}>
               {error}
             </Alert>
           )}
 
-          {!isEditing && activeStep === 0 ? renderTemplateStep() : renderFormStep()}
+          {!isEditing && activeStep === 0 ? (
+            <TemplateStep
+              selectedTemplate={selectedTemplate}
+              onSelectTemplate={handleSelectTemplate}
+              onNext={handleNextStep}
+              onSkip={handleSkipTemplate}
+              onCancel={() => navigate('/goals')}
+            />
+          ) : (
+            <FormStep
+              selectedTemplate={selectedTemplate}
+              isEditing={isEditing}
+              loading={loading}
+              title={title}
+              description={description}
+              targetAmount={targetAmount}
+              currentAmount={currentAmount}
+              goalType={goalType}
+              targetDate={targetDate}
+              groupId={groupId}
+              groups={groups}
+              onTitleChange={setTitle}
+              onDescriptionChange={setDescription}
+              onTargetAmountChange={setTargetAmount}
+              onCurrentAmountChange={setCurrentAmount}
+              onGoalTypeChange={setGoalType}
+              onTargetDateChange={setTargetDate}
+              onGroupIdChange={setGroupId}
+              onBack={handleBackStep}
+              onCancel={() => navigate('/goals')}
+              onSubmit={handleSubmit}
+            />
+          )}
         </Paper>
       </Box>
     </Container>
