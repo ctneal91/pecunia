@@ -14,12 +14,6 @@ class GroupInviteMailer < ApplicationMailer
   private
 
   def accept_invite_url(token)
-    "#{root_url}invites/#{token}"
-  end
-
-  def root_url
-    host = Rails.application.config.action_mailer.default_url_options[:host]
-    protocol = Rails.application.config.action_mailer.default_url_options[:protocol] || "http"
-    "#{protocol}://#{host}/"
+    "#{base_url}/invites/#{token}"
   end
 end

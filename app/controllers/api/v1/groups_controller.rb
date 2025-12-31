@@ -44,32 +44,66 @@ module Api
       end
 
       def join
-        group = Group.find_by(invite_code: params[:invite_code])
+        group = find_group_by_invite_code
+        return if group.nil?
+        return if already_member?(group)
 
-        if group.nil?
-          render json: { error: "Invalid invite code" }, status: :not_found
-          return
-        end
-
-        if group.member?(current_user)
-          render json: { error: "You are already a member of this group" }, status: :unprocessable_entity
-          return
-        end
-
-        membership = group.memberships.build(user: current_user, role: "member")
-        if membership.save
-          # Send email notifications to existing members about the new member
-          group.memberships.includes(:user).where.not(user: current_user).each do |existing_membership|
-            GroupActivityMailer.new_member(existing_membership.user, current_user, group).deliver_later
-          end
-
-          render json: { group: GroupSerializer.new(group, current_user: current_user).as_json }, status: :created
-        else
-          render json: { errors: membership.errors.full_messages }, status: :unprocessable_entity
-        end
+        create_membership_and_notify(group)
       end
 
       private
+
+      def find_group_by_invite_code
+        Group.find_by(invite_code: params[:invite_code]).tap do |group|
+          render_invalid_invite_code if group.nil?
+        end
+      end
+
+      def already_member?(group)
+        if group.member?(current_user)
+          render json: { error: "You are already a member of this group" }, status: :unprocessable_entity
+          true
+        else
+          false
+        end
+      end
+
+      def create_membership_and_notify(group)
+        membership = build_membership(group)
+
+        if membership.save
+          notify_existing_members(group)
+          render_created_group(group)
+        else
+          render_membership_errors(membership)
+        end
+      end
+
+      def build_membership(group)
+        group.memberships.build(user: current_user, role: "member")
+      end
+
+      def notify_existing_members(group)
+        existing_members(group).each do |existing_membership|
+          GroupActivityMailer.new_member(existing_membership.user, current_user, group).deliver_later
+        end
+      end
+
+      def existing_members(group)
+        group.memberships.includes(:user).where.not(user: current_user)
+      end
+
+      def render_invalid_invite_code
+        render json: { error: "Invalid invite code" }, status: :not_found
+      end
+
+      def render_created_group(group)
+        render json: { group: GroupSerializer.new(group, current_user: current_user).as_json }, status: :created
+      end
+
+      def render_membership_errors(membership)
+        render json: { errors: membership.errors.full_messages }, status: :unprocessable_entity
+      end
 
       def set_group
         @group = current_user.groups.find(params[:id])
