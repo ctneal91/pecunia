@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Box, Button, Alert, Skeleton } from '@mui/material';
+import { Container, Box, Button, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
@@ -17,6 +17,7 @@ import {
   MemberActionsMenu,
 } from '../../components/GroupDetail';
 import { SPACING } from '../../constants/ui';
+import { UnauthenticatedState, LoadingState, NotFoundState } from './components';
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
@@ -191,37 +192,15 @@ export default function GroupDetail() {
   }
 
   if (!user) {
-    return (
-      <Container maxWidth="md">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info">Please log in to view group details.</Alert>
-        </Box>
-      </Container>
-    );
+    return <UnauthenticatedState />;
   }
 
   if (loading) {
-    return (
-      <Container maxWidth="md">
-        <Box sx={{ mt: 4 }}>
-          <Skeleton variant="text" width={200} height={40} />
-          <Skeleton variant="rectangular" height={200} sx={{ mt: 2 }} />
-        </Box>
-      </Container>
-    );
+    return <LoadingState />;
   }
 
   if (error && !group) {
-    return (
-      <Container maxWidth="md">
-        <Box sx={{ mt: 4 }}>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/groups')} sx={{ mb: 2 }}>
-            Back to Groups
-          </Button>
-          <Alert severity="error">{error}</Alert>
-        </Box>
-      </Container>
-    );
+    return <NotFoundState error={error} onBackToGroups={() => navigate('/groups')} />;
   }
 
   if (!group) return null;
