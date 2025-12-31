@@ -8,6 +8,7 @@ const mockInvites: GroupInvite[] = [
     email: 'user1@example.com',
     status: 'pending',
     invited_at: '2024-01-01',
+    accepted_at: null,
     expired: false,
   },
   {
@@ -15,6 +16,7 @@ const mockInvites: GroupInvite[] = [
     email: 'user2@example.com',
     status: 'pending',
     invited_at: '2024-01-02',
+    accepted_at: null,
     expired: true,
   },
   {
@@ -22,6 +24,7 @@ const mockInvites: GroupInvite[] = [
     email: 'user3@example.com',
     status: 'accepted',
     invited_at: '2024-01-03',
+    accepted_at: '2024-01-04',
     expired: false,
   },
 ];

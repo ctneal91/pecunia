@@ -289,7 +289,6 @@ export default function GroupDetail() {
 
         <EditGroupDialog
           open={editDialogOpen}
-          groupName={group.name}
           editName={editName}
           submitting={submitting}
           onClose={() => setEditDialogOpen(false)}

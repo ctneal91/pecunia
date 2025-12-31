@@ -2,7 +2,6 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } 
 
 interface EditGroupDialogProps {
   open: boolean;
-  groupName: string;
   editName: string;
   submitting: boolean;
   onClose: () => void;
@@ -12,7 +11,6 @@ interface EditGroupDialogProps {
 
 export default function EditGroupDialog({
   open,
-  groupName,
   editName,
   submitting,
   onClose,

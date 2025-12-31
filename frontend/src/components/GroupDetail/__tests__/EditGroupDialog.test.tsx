@@ -14,7 +14,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={true}
-        groupName="Test Group"
         editName="Test Group"
         submitting={false}
         onClose={mockOnClose}
@@ -30,7 +29,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={false}
-        groupName="Test Group"
         editName="Test Group"
         submitting={false}
         onClose={mockOnClose}
@@ -46,7 +44,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={true}
-        groupName="Test Group"
         editName="New Name"
         submitting={false}
         onClose={mockOnClose}
@@ -63,7 +60,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={true}
-        groupName="Test Group"
         editName="Test Group"
         submitting={false}
         onClose={mockOnClose}
@@ -82,7 +78,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={true}
-        groupName="Test Group"
         editName="Test Group"
         submitting={false}
         onClose={mockOnClose}
@@ -101,7 +96,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={true}
-        groupName="Test Group"
         editName="New Name"
         submitting={false}
         onClose={mockOnClose}
@@ -120,7 +114,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={true}
-        groupName="Test Group"
         editName="New Name"
         submitting={true}
         onClose={mockOnClose}
@@ -137,7 +130,6 @@ describe('EditGroupDialog', () => {
     render(
       <EditGroupDialog
         open={true}
-        groupName="Test Group"
         editName="   "
         submitting={false}
         onClose={mockOnClose}
