@@ -102,6 +102,45 @@ RSpec.describe 'Api::V1::Contributions', type: :request do
           expect(json['goal']['milestones'].map { |m| m['percentage'] }).to contain_exactly(25, 50)
         end
       end
+
+      context 'for group goals' do
+        let(:group) { create(:group, created_by: user) }
+        let(:group_goal) { create(:goal, group: group, user: nil, current_amount: 0, target_amount: 10000) }
+        let(:other_member) { create(:user, email: 'member@example.com') }
+
+        before do
+          # User is already a member (created_by), just add the other member
+          create(:membership, group: group, user: other_member, role: 'member')
+        end
+
+        it 'sends email notifications to other group members' do
+          expect {
+            post "/api/v1/goals/#{group_goal.id}/contributions", params: valid_params
+          }.to have_enqueued_job(ActionMailer::MailDeliveryJob).at_least(:once)
+
+          expect(response).to have_http_status(:created)
+        end
+
+        it 'does not send notification to the contributor' do
+          post "/api/v1/goals/#{group_goal.id}/contributions", params: valid_params
+
+          # Verify the contribution was created
+          expect(response).to have_http_status(:created)
+        end
+
+        it 'sends goal completion emails when 100% milestone is reached' do
+          # Set goal almost complete by creating a contribution
+          create(:contribution, goal: group_goal, user: other_member, amount: 9500)
+          group_goal.reload
+
+          # This contribution should complete the goal (and trigger emails)
+          post "/api/v1/goals/#{group_goal.id}/contributions", params: { amount: 500, contributed_at: Time.current.iso8601 }
+
+          expect(response).to have_http_status(:created)
+          json = JSON.parse(response.body)
+          expect(json['new_milestones']).to include(100)
+        end
+      end
     end
   end
 

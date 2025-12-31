@@ -71,7 +71,11 @@ module Api
       private
 
       def set_goal
-        @goal = current_user.goals.find(params[:goal_id])
+        # Find personal goals or group goals where user is a member
+        @goal = Goal.joins("LEFT JOIN memberships ON goals.group_id = memberships.group_id")
+                    .where("goals.user_id = ? OR (goals.group_id IS NOT NULL AND memberships.user_id = ?)",
+                           current_user.id, current_user.id)
+                    .find(params[:goal_id])
       rescue ActiveRecord::RecordNotFound
         render json: { error: "Goal not found" }, status: :not_found
       end
