@@ -133,4 +133,26 @@ describe('ContributorsSection', () => {
     const listItems = screen.getAllByRole('listitem');
     expect(listItems).toHaveLength(3);
   });
+
+  it('uses singular "contribution" when count is 1', () => {
+    const singleContribution: Contributor[] = [
+      {
+        user_id: 1,
+        user_name: 'single_user',
+        contribution_count: 1,
+        total_amount: 100,
+        percentage: 100,
+      },
+    ];
+
+    render(
+      <ContributorsSection
+        contributors={singleContribution}
+        contributorCount={1}
+      />
+    );
+
+    expect(screen.getByText('1 contribution')).toBeInTheDocument();
+    expect(screen.queryByText('1 contributions')).not.toBeInTheDocument();
+  });
 });
