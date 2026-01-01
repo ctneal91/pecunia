@@ -101,4 +101,56 @@ describe('Navbar', () => {
       expect(titleLink).toHaveAttribute('href', '/');
     });
   });
+
+  it('shows first letter of email when user has no name', async () => {
+    mockedApi.getMe.mockResolvedValue({
+      data: { user: { id: 1, email: 'test@example.com', name: null, avatar_url: null } }
+    });
+    renderNavbar();
+
+    await waitFor(() => {
+      // Avatar should show first letter of email when name is null
+      expect(screen.getByText('T')).toBeInTheDocument();
+    });
+  });
+
+  it('shows avatar with user avatar_url when provided', async () => {
+    mockedApi.getMe.mockResolvedValue({
+      data: {
+        user: {
+          id: 1,
+          email: 'test@example.com',
+          name: 'Test User',
+          avatar_url: 'https://example.com/avatar.jpg'
+        }
+      }
+    });
+    renderNavbar();
+
+    await waitFor(() => {
+      const avatar = screen.getByAltText('Test User');
+      expect(avatar).toBeInTheDocument();
+      expect(avatar).toHaveAttribute('src', 'https://example.com/avatar.jpg');
+    });
+  });
+
+  it('shows Groups link when user is authenticated', async () => {
+    mockedApi.getMe.mockResolvedValue({
+      data: { user: { id: 1, email: 'test@example.com', name: 'Test User', avatar_url: null } }
+    });
+    renderNavbar();
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /groups/i })).toBeInTheDocument();
+    });
+  });
+
+  it('hides Groups link when user is not authenticated', async () => {
+    mockedApi.getMe.mockResolvedValue({ data: { user: null } });
+    renderNavbar();
+
+    await waitFor(() => {
+      expect(screen.queryByRole('link', { name: /groups/i })).not.toBeInTheDocument();
+    });
+  });
 });
