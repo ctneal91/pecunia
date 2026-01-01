@@ -155,4 +155,16 @@ describe('MilestoneCelebration', () => {
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
+
+  it('renders nothing when milestones array is empty', () => {
+    const { container } = render(
+      <MilestoneCelebration
+        milestones={[]}
+        goalTitle="Test Goal"
+        onClose={mockOnClose}
+      />
+    );
+
+    expect(container.firstChild).toBeNull();
+  });
 });
