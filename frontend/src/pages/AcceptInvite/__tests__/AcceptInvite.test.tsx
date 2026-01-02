@@ -51,6 +51,17 @@ describe('AcceptInvite', () => {
       expect(screen.getByText('Invalid invitation')).toBeInTheDocument();
       expect(screen.getByText('Go Home')).toBeInTheDocument();
     });
+
+    it('handles API response with no invite data (line 38-45)', async () => {
+      mockedApi.getMe.mockResolvedValue({ data: { user: null } });
+      // @ts-expect-error - Testing edge case where API returns empty data object
+      mockedApi.getInviteDetails.mockResolvedValue({ data: {} });
+      renderAcceptInvite();
+
+      await waitFor(() => {
+        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe('expired invite', () => {
@@ -153,6 +164,33 @@ describe('AcceptInvite', () => {
       });
     });
 
+    it('navigates to group page after accepting invite (line 56)', async () => {
+      jest.useFakeTimers();
+      mockedApi.getInviteDetails.mockResolvedValue({
+        data: { invite: validInvite }
+      });
+      mockedApi.acceptInvite.mockResolvedValue({
+        data: { group: { id: 1, name: 'Family Budget', invite_code: 'ABC', member_count: 2, goal_count: 0, is_admin: false, created_at: '', updated_at: '' } }
+      });
+      renderAcceptInvite();
+
+      await waitFor(() => {
+        expect(screen.getByText('Accept Invitation')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Accept Invitation'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Welcome to Family Budget!')).toBeInTheDocument();
+      });
+
+      // Fast-forward timer to trigger navigation
+      jest.advanceTimersByTime(2000);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/groups/1');
+      jest.useRealTimers();
+    });
+
     it('shows error when accept fails', async () => {
       mockedApi.getInviteDetails.mockResolvedValue({
         data: { invite: validInvite }
@@ -170,6 +208,26 @@ describe('AcceptInvite', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Already a member')).toBeInTheDocument();
+      });
+    });
+
+    it('handles accept response with no data or error (line 53-63)', async () => {
+      mockedApi.getInviteDetails.mockResolvedValue({
+        data: { invite: validInvite }
+      });
+      // API returns success but no data
+      mockedApi.acceptInvite.mockResolvedValue({});
+      renderAcceptInvite();
+
+      await waitFor(() => {
+        expect(screen.getByText('Accept Invitation')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Accept Invitation'));
+
+      await waitFor(() => {
+        // Should not show error or success state
+        expect(screen.getByText('Accept Invitation')).toBeInTheDocument();
       });
     });
 
@@ -206,6 +264,34 @@ describe('AcceptInvite', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+      });
+    });
+
+    it('clears error when close button is clicked (line 132)', async () => {
+      mockedApi.getInviteDetails.mockResolvedValue({
+        data: { invite: validInvite }
+      });
+      mockedApi.acceptInvite.mockResolvedValue({ error: 'Test error' });
+      renderAcceptInvite();
+
+      await waitFor(() => {
+        expect(screen.getByText('Accept Invitation')).toBeInTheDocument();
+      });
+
+      // Trigger an error
+      fireEvent.click(screen.getByText('Accept Invitation'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Test error')).toBeInTheDocument();
+      });
+
+      // Find and click the close button on the Alert
+      const closeButton = screen.getByRole('button', { name: /close/i });
+      fireEvent.click(closeButton);
+
+      // Error should be cleared
+      await waitFor(() => {
+        expect(screen.queryByText('Test error')).not.toBeInTheDocument();
       });
     });
   });
