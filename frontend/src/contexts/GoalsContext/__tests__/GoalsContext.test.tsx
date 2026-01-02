@@ -147,6 +147,25 @@ describe('GoalsContext', () => {
       });
     });
 
+    it('handles API response with no goals property (line 35)', async () => {
+      // @ts-expect-error Testing edge case where data exists but goals is undefined
+      mockedApi.getGoals.mockResolvedValue({ data: {} });
+      renderWithAuth(true);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('goals-count')).toHaveTextContent('0');
+      });
+    });
+
+    it('handles API response with undefined data (line 35)', async () => {
+      mockedApi.getGoals.mockResolvedValue({});
+      renderWithAuth(true);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('goals-count')).toHaveTextContent('0');
+      });
+    });
+
     it('creates goal via API', async () => {
       const user = userEvent.setup();
       const newGoal: Goal = {
@@ -208,6 +227,31 @@ describe('GoalsContext', () => {
         expect(screen.getByTestId('goal-1')).toHaveTextContent('Updated Title');
       });
       expect(onAction).toHaveBeenCalledWith('update', updatedGoal);
+    });
+
+    it('updates goal with multiple goals in list (line 73)', async () => {
+      const goal2: Goal = { ...mockGoal, id: 2, title: 'Second Goal' };
+      mockedApi.getGoals.mockResolvedValue({ data: { goals: [mockGoal, goal2] } });
+
+      const user = userEvent.setup();
+      const updatedGoal: Goal = { ...mockGoal, title: 'Updated Title' };
+      mockedApi.updateGoal.mockResolvedValue({ data: { goal: updatedGoal } });
+
+      const onAction = jest.fn();
+      renderWithAuthAndCallback(true, onAction);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('goals-count')).toHaveTextContent('2');
+        expect(screen.getByTestId('goal-1')).toHaveTextContent('Emergency Fund');
+        expect(screen.getByTestId('goal-2')).toHaveTextContent('Second Goal');
+      });
+
+      await user.click(screen.getByText('Update Goal'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('goal-1')).toHaveTextContent('Updated Title');
+        expect(screen.getByTestId('goal-2')).toHaveTextContent('Second Goal');
+      });
     });
 
     it('handles update goal error', async () => {
@@ -343,6 +387,31 @@ describe('GoalsContext', () => {
       });
       expect(mockedGoalStorage.update).toHaveBeenCalledWith(1, { title: 'Updated Title' });
       expect(onAction).toHaveBeenCalledWith('update', updatedGoal);
+    });
+
+    it('updates goal with multiple goals in local storage (line 78)', async () => {
+      const goal2: Goal = { ...mockGoal, id: 2, title: 'Second Goal' };
+      mockedGoalStorage.getAll.mockReturnValue([mockGoal, goal2]);
+
+      const user = userEvent.setup();
+      const updatedGoal: Goal = { ...mockGoal, title: 'Updated Title' };
+      mockedGoalStorage.update.mockReturnValue(updatedGoal);
+
+      const onAction = jest.fn();
+      renderWithAuthAndCallback(false, onAction);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('goals-count')).toHaveTextContent('2');
+        expect(screen.getByTestId('goal-1')).toHaveTextContent('Emergency Fund');
+        expect(screen.getByTestId('goal-2')).toHaveTextContent('Second Goal');
+      });
+
+      await user.click(screen.getByText('Update Goal'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('goal-1')).toHaveTextContent('Updated Title');
+        expect(screen.getByTestId('goal-2')).toHaveTextContent('Second Goal');
+      });
     });
 
     it('handles update goal not found in local storage', async () => {
