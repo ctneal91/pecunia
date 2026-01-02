@@ -289,6 +289,24 @@ describe('useContribution', () => {
 
       expect(onSuccess).toHaveBeenCalledWith(mockContribution, mockGoal, [25, 50]);
     });
+
+    it('handles response without data or error (line 72)', async () => {
+      const { result } = renderHook(() => useContribution());
+      const onSuccess = jest.fn();
+
+      mockedApi.createContribution.mockResolvedValue({});
+
+      act(() => {
+        result.current.setAmount('100');
+      });
+
+      await act(async () => {
+        await result.current.handleSubmit(mockGoal, true, onSuccess);
+      });
+
+      expect(onSuccess).not.toHaveBeenCalled();
+      expect(result.current.error).toBeNull();
+    });
   });
 
   describe('handleGuestSubmit (lines 78-106)', () => {
@@ -368,6 +386,23 @@ describe('useContribution', () => {
       expect(updateGoalCallback).toHaveBeenCalledWith(1, {
         current_amount: 0,
       });
+    });
+
+    it('handles when updateGoalCallback returns null (line 91)', async () => {
+      const { result } = renderHook(() => useContribution());
+      const onSuccess = jest.fn();
+      const updateGoalCallback = jest.fn().mockResolvedValue(null);
+
+      act(() => {
+        result.current.setAmount('100');
+      });
+
+      await act(async () => {
+        await result.current.handleSubmit(mockGoal, false, onSuccess, updateGoalCallback);
+      });
+
+      expect(updateGoalCallback).toHaveBeenCalled();
+      expect(onSuccess).not.toHaveBeenCalled();
     });
   });
 
