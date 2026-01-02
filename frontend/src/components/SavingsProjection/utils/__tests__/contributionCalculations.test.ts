@@ -92,7 +92,7 @@ describe('contributionCalculations', () => {
     });
 
     it('returns "Bi-weekly" for bi-weekly contributions', () => {
-      const contributions = [createContribution(28), createContribution(14), createContribution(0)];
+      const contributions = [createContribution(26), createContribution(13), createContribution(0)];
       const firstDate = new Date(contributions[0].contributed_at);
       const lastDate = new Date(contributions[2].contributed_at);
 
