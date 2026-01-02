@@ -96,7 +96,32 @@ describe('AuthContext', () => {
   it('handles login error', async () => {
     const user = userEvent.setup();
     mockedApi.getMe.mockResolvedValue({ data: { user: null } });
+    mockedGoalStorage.getAll.mockReturnValue([]);
     mockedApi.login.mockResolvedValue({ error: 'Invalid credentials' });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('user')).toHaveTextContent('No user');
+    });
+
+    await user.click(screen.getByText('Login'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('user')).toHaveTextContent('No user');
+    });
+  });
+
+  it('handles login response with no user data (line 52)', async () => {
+    const user = userEvent.setup();
+    mockedApi.getMe.mockResolvedValue({ data: { user: null } });
+    mockedGoalStorage.getAll.mockReturnValue([]);
+    // @ts-expect-error Testing edge case where data exists but user is undefined
+    mockedApi.login.mockResolvedValue({ data: {} });
 
     render(
       <AuthProvider>
