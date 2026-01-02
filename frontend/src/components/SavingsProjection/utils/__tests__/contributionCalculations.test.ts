@@ -90,6 +90,38 @@ describe('contributionCalculations', () => {
 
       expect(frequency).toBe('Monthly');
     });
+
+    it('returns "Bi-weekly" for bi-weekly contributions', () => {
+      const contributions = [createContribution(28), createContribution(14), createContribution(0)];
+      const firstDate = new Date(contributions[0].contributed_at);
+      const lastDate = new Date(contributions[2].contributed_at);
+
+      const frequency = determineContributionFrequency(contributions, firstDate, lastDate);
+
+      expect(frequency).toBe('Bi-weekly');
+    });
+
+    it('returns "Occasional" for infrequent contributions (line 38)', () => {
+      // Test contributions more than 31 days apart on average
+      const contributions = [createContribution(90), createContribution(45), createContribution(0)];
+      const firstDate = new Date(contributions[0].contributed_at);
+      const lastDate = new Date(contributions[2].contributed_at);
+
+      const frequency = determineContributionFrequency(contributions, firstDate, lastDate);
+
+      expect(frequency).toBe('Occasional');
+    });
+
+    it('returns "Occasional" for very infrequent contributions', () => {
+      // Test with only 2 contributions 60 days apart (avg = 60 days)
+      const contributions = [createContribution(60), createContribution(0)];
+      const firstDate = new Date(contributions[0].contributed_at);
+      const lastDate = new Date(contributions[1].contributed_at);
+
+      const frequency = determineContributionFrequency(contributions, firstDate, lastDate);
+
+      expect(frequency).toBe('Occasional');
+    });
   });
 
   describe('calculateEstimatedCompletion', () => {
