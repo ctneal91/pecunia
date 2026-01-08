@@ -715,10 +715,43 @@ describe('api', () => {
       expect(result.error).toBe('Unauthorized');
     });
 
+    it('returns errors array when provided', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: () => Promise.resolve({ errors: ['Field is required', 'Invalid value'] }),
+      });
+
+      const result = await api.createGoal({ title: '', target_amount: 0, goal_type: 'savings' });
+
+      expect(result.error).toBe('Field is required, Invalid value');
+      expect(result.errors).toEqual(['Field is required', 'Invalid value']);
+    });
+
+    it('returns default error message when no error provided', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({}),
+      });
+
+      const result = await api.getGoals();
+
+      expect(result.error).toBe('Request failed');
+    });
+
     it('handles network errors', async () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
       const result = await api.exportSummary();
+
+      expect(result.error).toBe('Network error');
+    });
+
+    it('handles fetch errors without message', async () => {
+      (global.fetch as jest.Mock).mockRejectedValue({});
+
+      const result = await api.login('test@example.com', 'password');
 
       expect(result.error).toBe('Network error');
     });
